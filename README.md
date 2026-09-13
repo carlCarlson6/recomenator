@@ -70,52 +70,52 @@ T3 Env validates all variables at build and runtime.
 ### Start the local database
 
 ```bash
-pnpm db:start
+npm run db:start
 ```
 
 ### Install dependencies
 
 ```bash
-pnpm install
+npm install
 ```
 
 ### Run migrations
 
 ```bash
-pnpm db:migrate
+npm run db:migrate
 ```
 
 ### Seed the database
 
 ```bash
-pnpm db:seed
+npm run db:seed
 ```
 
 ### Run the dev server
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 ### Run tests
 
 ```bash
-pnpm test
+npm test
 ```
 
 ## Scripts
 
 | Script | Description |
 |---|---|
-| `pnpm dev` | Start TanStack Start dev server |
-| `pnpm build` | Build for production |
-| `pnpm db:start` | Start local Postgres in Docker |
-| `pnpm db:stop` | Stop local Postgres |
-| `pnpm db:generate` | Generate Drizzle migration |
-| `pnpm db:migrate` | Run Drizzle migrations |
-| `pnpm db:seed` | Seed local database |
-| `pnpm db:reset` | Stop, start, migrate, and seed local database |
-| `pnpm test` | Run Vitest |
+| `npm run dev` | Start TanStack Start dev server |
+| `npm run build` | Build for production |
+| `npm run db:start` | Start local Postgres in Docker |
+| `npm run db:stop` | Stop local Postgres |
+| `npm run db:generate` | Generate Drizzle migration |
+| `npm run db:migrate` | Run Drizzle migrations |
+| `npm run db:seed` | Seed local database |
+| `npm run db:reset` | Stop, start, migrate, and seed local database |
+| `npm test` | Run Vitest |
 
 ## Conventions
 
@@ -133,8 +133,8 @@ pnpm test
 2. Set `DATABASE_URL` to the **pooled** connection string (hostname ends in `-pooler`).
 3. Set `DATABASE_URL_UNPOOLED` to the **direct** connection string.
 4. Create a Vercel project, connect the repo, and set all environment variables.
-5. Run `pnpm db:migrate` against the target database.
-6. Deploy with `pnpm build`.
+5. Run `npm run db:migrate` against the target database.
+6. Deploy with `npm run build`.
 
 ## License
 

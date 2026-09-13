@@ -15,7 +15,7 @@
     "db:generate": "tsx node_modules/drizzle-kit/bin.cjs generate",
     "db:migrate": "tsx node_modules/drizzle-kit/bin.cjs migrate",
     "db:seed": "tsx scripts/seed.ts",
-    "db:reset": "pnpm db:stop && pnpm db:start && pnpm db:migrate && pnpm db:seed",
+    "db:reset": "npm run db:stop && npm run db:start && npm run db:migrate && npm run db:seed",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
   },
