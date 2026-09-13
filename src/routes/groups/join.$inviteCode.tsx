@@ -25,13 +25,20 @@ export const Route = createFileRoute('/groups/join/$inviteCode')({
       data: { groupId: preview.groupId },
     })
 
-    return { preview, membership }
+    if (membership) {
+      throw redirect({
+        to: '/groups/$groupId',
+        params: { groupId: preview.groupId },
+      })
+    }
+
+    return { preview }
   },
   component: JoinGroupPage,
 })
 
 function JoinGroupPage() {
-  const { preview, membership } = Route.useRouteContext()
+  const { preview } = Route.useRouteContext()
   const { inviteCode } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -44,33 +51,6 @@ function JoinGroupPage() {
       navigate({ to: '/groups/$groupId', params: { groupId: data.groupId } })
     },
   })
-
-  if (membership) {
-    return (
-      <main className="mx-auto max-w-xl px-4 py-12">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1 text-sm text-primary"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Link>
-
-        <h1 className="mt-6 text-2xl font-bold">You're already a member</h1>
-        <p className="mt-2 text-muted-foreground">
-          You're already part of <span className="font-medium text-foreground">{preview.groupName}</span>.
-        </p>
-
-        <Link
-          to="/groups/$groupId"
-          params={{ groupId: preview.groupId }}
-          className="mt-6 inline-block rounded-md bg-primary px-4 py-2 text-primary-foreground"
-        >
-          Go to group
-        </Link>
-      </main>
-    )
-  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
