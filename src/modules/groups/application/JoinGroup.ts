@@ -3,7 +3,6 @@ import type { DomainError } from '#/shared/kernel/DomainError.js';
 import { ValidationError } from '#/shared/kernel/DomainError.js';
 
 import {
-  AlreadyMemberError,
   ExpiredInviteError,
   GroupNotFoundError,
   InviteNotFoundError,
@@ -57,7 +56,7 @@ export async function joinGroupWithInvite(
   if (!group) return err(new GroupNotFoundError());
 
   const existing = await deps.membershipRepo.findByUserAndGroup(input.userId, group.id);
-  if (existing) return err(new AlreadyMemberError());
+  if (existing) return ok(toDto(existing));
 
   const membershipResult = Membership.create({
     userId: input.userId,

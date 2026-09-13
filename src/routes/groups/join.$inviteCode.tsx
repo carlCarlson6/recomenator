@@ -1,16 +1,38 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Link, createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
+import { Link, createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 
-import { joinGroupFn } from '#/modules/groups/adapters/groups.functions.js'
+import { getCurrentUserFn } from '#/modules/auth/adapters/auth.functions.js'
+import {
+  getInvitePreviewFn,
+  getMyMembershipForGroupFn,
+  joinGroupFn,
+} from '#/modules/groups/adapters/groups.functions.js'
 
 export const Route = createFileRoute('/groups/join/$inviteCode')({
+  beforeLoad: async ({ params, location }) => {
+    const user = await getCurrentUserFn()
+    if (!user) {
+      throw redirect({
+        to: '/sign-in/$',
+        search: { redirect_url: location.href },
+      })
+    }
+
+    const preview = await getInvitePreviewFn({ data: { code: params.inviteCode } })
+    const membership = await getMyMembershipForGroupFn({
+      data: { groupId: preview.groupId },
+    })
+
+    return { preview, membership }
+  },
   component: JoinGroupPage,
 })
 
 function JoinGroupPage() {
-  const { inviteCode } = useParams({ from: '/groups/join/$inviteCode' })
+  const { preview, membership } = Route.useRouteContext()
+  const { inviteCode } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [displayName, setDisplayName] = useState('')
@@ -22,6 +44,33 @@ function JoinGroupPage() {
       navigate({ to: '/groups/$groupId', params: { groupId: data.groupId } })
     },
   })
+
+  if (membership) {
+    return (
+      <main className="mx-auto max-w-xl px-4 py-12">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-sm text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Link>
+
+        <h1 className="mt-6 text-2xl font-bold">You're already a member</h1>
+        <p className="mt-2 text-muted-foreground">
+          You're already part of <span className="font-medium text-foreground">{preview.groupName}</span>.
+        </p>
+
+        <Link
+          to="/groups/$groupId"
+          params={{ groupId: preview.groupId }}
+          className="mt-6 inline-block rounded-md bg-primary px-4 py-2 text-primary-foreground"
+        >
+          Go to group
+        </Link>
+      </main>
+    )
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,7 +87,7 @@ function JoinGroupPage() {
         Back
       </Link>
 
-      <h1 className="mt-6 text-2xl font-bold">Join group</h1>
+      <h1 className="mt-6 text-2xl font-bold">Join {preview.groupName}</h1>
       <p className="mt-2 text-muted-foreground">Invitation code: {inviteCode}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">

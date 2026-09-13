@@ -3,6 +3,8 @@ import { DrizzleUserRepository } from './modules/auth/infrastructure/DrizzleUser
 import { createGroup } from './modules/groups/application/CreateGroup.js';
 import { generateInvite } from './modules/groups/application/GenerateInvite.js';
 import { getGroup, updateDisplayName } from './modules/groups/application/GetGroup.js';
+import { getInvitePreview } from './modules/groups/application/GetInvitePreview.js';
+import { getMyMembershipForGroup } from './modules/groups/application/GetMyMembershipForGroup.js';
 import { joinGroupWithInvite } from './modules/groups/application/JoinGroup.js';
 import { listMyGroups } from './modules/groups/application/ListMyGroups.js';
 import { DrizzleGroupRepository } from './modules/groups/infrastructure/DrizzleGroupRepository.js';
@@ -38,6 +40,12 @@ export function createUseCases() {
 
     generateInvite: (input: Parameters<typeof generateInvite>[0]) =>
       generateInvite(input, { groupRepo, inviteRepo, membershipRepo }),
+
+    getInvitePreview: (input: Parameters<typeof getInvitePreview>[0]) =>
+      getInvitePreview(input, { inviteRepo, groupRepo }),
+
+    getMyMembershipForGroup: (input: Parameters<typeof getMyMembershipForGroup>[0]) =>
+      getMyMembershipForGroup(input, { membershipRepo, groupRepo }),
 
     joinGroupWithInvite: (input: Parameters<typeof joinGroupWithInvite>[0]) =>
       joinGroupWithInvite(input, { groupRepo, inviteRepo, membershipRepo }),

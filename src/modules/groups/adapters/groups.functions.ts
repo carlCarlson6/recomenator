@@ -78,6 +78,30 @@ export const updateDisplayNameFn = createServerFn({ method: 'POST' })
     );
   });
 
+const inviteCodeSchema = z.object({
+  code: z.string().length(32),
+});
+
+export const getInvitePreviewFn = createServerFn({ method: 'GET' })
+  .validator(inviteCodeSchema)
+  .handler(async ({ data }) => {
+    const { getInvitePreview } = createUseCases();
+    return unwrapResult(await getInvitePreview({ code: data.code }));
+  });
+
+export const getMyMembershipForGroupFn = createServerFn({ method: 'GET' })
+  .middleware([protectedMiddleware])
+  .validator(groupIdSchema)
+  .handler(async ({ data, context }) => {
+    const { getMyMembershipForGroup } = createUseCases();
+    return unwrapResult(
+      await getMyMembershipForGroup({
+        groupId: data.groupId,
+        userId: context.userId,
+      }),
+    );
+  });
+
 const joinGroupSchema = z.object({
   code: z.string().length(32),
   displayName: z.string().min(1).max(50).trim(),
