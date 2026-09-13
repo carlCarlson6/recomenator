@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, createFileRoute, useParams } from '@tanstack/react-router'
-import { Home, Plus, Settings } from 'lucide-react'
+import { HandHeart, Home, Plus, Settings } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { getGroupFn } from '#/modules/groups/adapters/groups.functions.js';
@@ -99,6 +99,17 @@ function GroupPage() {
           <BottomBarItem>
             <Home className="h-5 w-5" />
             <span>Home</span>
+          </BottomBarItem>
+        </Link>
+
+        <Link
+          to="/groups/$groupId/interactions"
+          params={{ groupId }}
+          className="flex-1"
+        >
+          <BottomBarItem>
+            <HandHeart className="h-5 w-5" />
+            <span>Interactions</span>
           </BottomBarItem>
         </Link>
 

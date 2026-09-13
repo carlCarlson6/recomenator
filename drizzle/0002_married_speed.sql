@@ -1,0 +1,1 @@
+CREATE INDEX "post_reactions_user_id_type_created_at_idx" ON "post_reactions" USING btree ("user_id","type","created_at");

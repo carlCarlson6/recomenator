@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import { db } from '#/shared/infrastructure/db/client.js';
 import { posts, type Category } from '#/shared/infrastructure/db/schema.js';
@@ -10,6 +10,13 @@ export class DrizzlePostRepository implements PostRepository {
   async findById(id: string): Promise<Post | null> {
     const [row] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
     return row ? Post.reconstitute(row) : null;
+  }
+
+  async findByIds(ids: string[]): Promise<Post[]> {
+    if (ids.length === 0) return [];
+
+    const rows = await db.select().from(posts).where(inArray(posts.id, ids));
+    return rows.map(Post.reconstitute);
   }
 
   async findByGroupId(groupId: string, options?: { category?: Category }): Promise<Post[]> {
