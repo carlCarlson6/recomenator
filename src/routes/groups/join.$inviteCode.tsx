@@ -1,0 +1,66 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
+import { useState } from 'react'
+
+import { joinGroupFn } from '#/modules/groups/adapters/groups.functions.js'
+
+export const Route = createFileRoute('/groups/join/$inviteCode')({
+  component: JoinGroupPage,
+})
+
+function JoinGroupPage() {
+  const { inviteCode } = useParams({ from: '/groups/join/$inviteCode' })
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [displayName, setDisplayName] = useState('')
+
+  const join = useMutation({
+    mutationFn: joinGroupFn,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] })
+      navigate({ to: '/groups/$groupId', params: { groupId: data.groupId } })
+    },
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    join.mutate({ data: { code: inviteCode, displayName } })
+  }
+
+  return (
+    <main className="mx-auto max-w-xl px-4 py-12">
+      <h1 className="text-2xl font-bold">Join group</h1>
+      <p className="mt-2 text-muted-foreground">Invitation code: {inviteCode}</p>
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <div>
+          <label htmlFor="displayName" className="block text-sm font-medium">
+            Your display name in this group
+          </label>
+          <input
+            id="displayName"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2"
+            required
+            maxLength={50}
+          />
+        </div>
+
+        {join.error && (
+          <p className="text-sm text-red-600">
+            {join.error instanceof Error ? join.error.message : 'Failed to join group'}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={join.isPending}
+          className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
+        >
+          {join.isPending ? 'Joining...' : 'Join group'}
+        </button>
+      </form>
+    </main>
+  )
+}

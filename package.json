@@ -1,0 +1,55 @@
+{
+  "name": "recomenator",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "dev": "vite dev --port 3000",
+    "generate-routes": "tsr generate",
+    "build": "vite build",
+    "preview": "vite preview",
+    "db:start": "./scripts/start-local-db.sh",
+    "db:stop": "docker stop recomenator-db && docker rm recomenator-db",
+    "db:generate": "tsx node_modules/drizzle-kit/bin.cjs generate",
+    "db:migrate": "tsx node_modules/drizzle-kit/bin.cjs migrate",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:reset": "pnpm db:stop && pnpm db:start && pnpm db:migrate && pnpm db:seed",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clerk/react": "^6.15.2",
+    "@clerk/tanstack-react-start": "^1.2.0",
+    "@clerk/types": "^4.101.20",
+    "@t3-oss/env-core": "^0.13.0",
+    "@tanstack/react-query": "^5.66.0",
+    "@tanstack/react-router": "^1.170.35",
+    "@tanstack/react-start": "^1.168.52",
+    "cheerio": "^1.0.0",
+    "drizzle-orm": "^0.40.0",
+    "nanoid": "^5.1.0",
+    "nitro": "3.0.260610-beta",
+    "pg": "^8.14.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/router-cli": "^1.167.35",
+    "@types/node": "^22.13.0",
+    "@types/pg": "^8.11.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.1.0",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.30.0",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.3",
+    "vite": "^8.3.0",
+    "vitest": "^3.0.0"
+  }
+}
