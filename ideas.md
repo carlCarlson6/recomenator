@@ -1,5 +1,4 @@
-user that creates post can add a rating
+view for users to see what the have click on like, not liked, interested and viewed
+inside that view users can filter by category an click type
 
-other users can react to a post with: interested, liked, not liked, viewed
-
-on the recomendations list display the user display name
+add vercel analytics, speed insights
