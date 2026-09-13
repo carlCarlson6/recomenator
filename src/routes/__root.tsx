@@ -1,6 +1,6 @@
 import { ClerkProvider } from '@clerk/tanstack-react-start'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Link, Scripts, createRootRoute } from '@tanstack/react-router'
 
 import '#/env/client.js'
 import { getCurrentUserFn } from '#/modules/auth/adapters/auth.functions.js'
@@ -33,8 +33,24 @@ export const Route = createRootRoute({
     const user = await getCurrentUserFn()
     return { user }
   },
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 })
+
+function NotFound() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
+      <h1 className="text-4xl font-bold">404</h1>
+      <p className="mt-2 text-lg text-gray-600">Page not found.</p>
+      <Link
+        to="/"
+        className="mt-6 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+      >
+        Go home
+      </Link>
+    </div>
+  )
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (

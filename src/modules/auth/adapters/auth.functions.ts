@@ -15,7 +15,8 @@ export const getCurrentUserFn = createServerFn({ method: 'GET' }).handler(async 
   const avatarUrl = clerkUser.imageUrl ?? undefined;
 
   const { syncClerkUser } = createUseCases();
-  return syncClerkUser({ id: userId, email, avatarUrl });
+  const user = await syncClerkUser({ id: userId, email, avatarUrl });
+  return { id: user.id, email: user.email, avatarUrl: user.avatarUrl, createdAt: user.createdAt };
 });
 
 export const getUserIdFn = createServerFn({ method: 'GET' })
