@@ -12,11 +12,18 @@ export const getCurrentUserFn = createServerFn({ method: 'GET' }).handler(async 
   const clerkUser = await client.users.getUser(userId);
 
   const email = clerkUser.emailAddresses[0]?.emailAddress ?? '';
+  const username = clerkUser.username ?? undefined;
   const avatarUrl = clerkUser.imageUrl ?? undefined;
 
   const { syncClerkUser } = createUseCases();
-  const user = await syncClerkUser({ id: userId, email, avatarUrl });
-  return { id: user.id, email: user.email, avatarUrl: user.avatarUrl, createdAt: user.createdAt };
+  const user = await syncClerkUser({ id: userId, email, username, avatarUrl });
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    avatarUrl: user.avatarUrl,
+    createdAt: user.createdAt,
+  };
 });
 
 export const getUserIdFn = createServerFn({ method: 'GET' })

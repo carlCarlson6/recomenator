@@ -8,6 +8,13 @@
       "when": 1789299802696,
       "tag": "0000_sparkling_the_anarchist",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789316309111,
+      "tag": "0001_cuddly_justice",
+      "breakpoints": true
     }
   ]
 }

@@ -16,6 +16,7 @@ export class Post {
     readonly externalUrl: string | null,
     readonly previewImageUrl: string | null,
     readonly previewEmbedHtml: string | null,
+    readonly rating: number | null,
     readonly createdAt: Date,
   ) {}
 
@@ -26,6 +27,7 @@ export class Post {
     title: string;
     description?: string | null;
     externalUrl?: string | null;
+    rating?: number | null;
   }): Result<Post, ValidationError> {
     const title = input.title.trim();
     if (title.length === 0 || title.length > 200) {
@@ -35,6 +37,11 @@ export class Post {
     const description = input.description?.trim() ?? null;
     if (description && description.length > 2000) {
       return err(new ValidationError('Description must be at most 2000 characters'));
+    }
+
+    const rating = input.rating ?? null;
+    if (rating !== null && (!Number.isInteger(rating) || rating < 1 || rating > 10)) {
+      return err(new ValidationError('Rating must be an integer between 1 and 10'));
     }
 
     return ok(
@@ -48,6 +55,7 @@ export class Post {
         input.externalUrl?.trim() ?? null,
         null,
         null,
+        rating,
         new Date(),
       ),
     );
@@ -64,6 +72,7 @@ export class Post {
       this.externalUrl,
       preview.imageUrl ?? null,
       preview.embedHtml ?? null,
+      this.rating,
       this.createdAt,
     );
   }
@@ -78,6 +87,7 @@ export class Post {
     externalUrl: string | null;
     previewImageUrl: string | null;
     previewEmbedHtml: string | null;
+    rating: number | null;
     createdAt: Date;
   }): Post {
     return new Post(
@@ -90,6 +100,7 @@ export class Post {
       input.externalUrl,
       input.previewImageUrl,
       input.previewEmbedHtml,
+      input.rating,
       input.createdAt,
     );
   }

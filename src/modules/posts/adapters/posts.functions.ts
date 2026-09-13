@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { createUseCases } from '#/composition.js';
 import { protectedMiddleware } from '#/shared/infrastructure/auth/protectedMiddleware.js';
 import { unwrapResult } from '#/shared/kernel/unwrapResult.js';
-import type { Category } from '#/shared/infrastructure/db/schema.js';
+import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js';
 
 const createPostSchema = z.object({
   groupId: z.string().min(1),
@@ -12,6 +12,7 @@ const createPostSchema = z.object({
   title: z.string().min(1).max(200).trim(),
   description: z.string().max(2000).trim().optional(),
   externalUrl: z.string().url().optional(),
+  rating: z.number().int().min(1).max(10).optional(),
 });
 
 export const createPostFn = createServerFn({ method: 'POST' })
@@ -27,6 +28,7 @@ export const createPostFn = createServerFn({ method: 'POST' })
         title: data.title,
         description: data.description,
         externalUrl: data.externalUrl,
+        rating: data.rating,
       }),
     );
   });
@@ -61,6 +63,39 @@ export const getPostFn = createServerFn({ method: 'GET' })
       await getPost({
         postId: data.postId,
         userId: context.userId,
+      }),
+    );
+  });
+
+const reactionSchema = z.object({
+  postId: z.string().min(1),
+  type: z.enum(['interested', 'liked', 'not_liked', 'viewed']),
+});
+
+export const addPostReactionFn = createServerFn({ method: 'POST' })
+  .middleware([protectedMiddleware])
+  .validator(reactionSchema)
+  .handler(async ({ data, context }) => {
+    const { addPostReaction } = createUseCases();
+    return unwrapResult(
+      await addPostReaction({
+        postId: data.postId,
+        userId: context.userId,
+        type: data.type as ReactionType,
+      }),
+    );
+  });
+
+export const removePostReactionFn = createServerFn({ method: 'POST' })
+  .middleware([protectedMiddleware])
+  .validator(reactionSchema)
+  .handler(async ({ data, context }) => {
+    const { removePostReaction } = createUseCases();
+    return unwrapResult(
+      await removePostReaction({
+        postId: data.postId,
+        userId: context.userId,
+        type: data.type as ReactionType,
       }),
     );
   });

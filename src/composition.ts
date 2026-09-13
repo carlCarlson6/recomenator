@@ -12,7 +12,12 @@ import { DrizzleInviteRepository } from './modules/groups/infrastructure/Drizzle
 import { DrizzleMembershipRepository } from './modules/groups/infrastructure/DrizzleMembershipRepository.js';
 import { createPost, listTimelinePosts } from './modules/posts/application/CreatePost.js';
 import { getPost } from './modules/posts/application/GetPost.js';
+import {
+  addPostReaction,
+  removePostReaction,
+} from './modules/posts/application/PostReactionUseCases.js';
 import { DrizzlePostRepository } from './modules/posts/infrastructure/DrizzlePostRepository.js';
+import { DrizzlePostReactionRepository } from './modules/posts/infrastructure/DrizzlePostReactionRepository.js';
 import { OpenGraphLinkPreviewService } from './modules/linkPreview/infrastructure/OpenGraphLinkPreviewService.js';
 import { addReply, listReplies } from './modules/replies/application/ReplyUseCases.js';
 import { DrizzleReplyRepository } from './modules/replies/infrastructure/DrizzleReplyRepository.js';
@@ -27,6 +32,7 @@ const groupRepo = new DrizzleGroupRepository();
 const inviteRepo = new DrizzleInviteRepository();
 const membershipRepo = new DrizzleMembershipRepository();
 const postRepo = new DrizzlePostRepository();
+const postReactionRepo = new DrizzlePostReactionRepository();
 const replyRepo = new DrizzleReplyRepository();
 const notificationRepo = new DrizzleNotificationRepository();
 const linkPreviewService = new OpenGraphLinkPreviewService();
@@ -60,19 +66,25 @@ export function createUseCases() {
       updateDisplayName(input, { membershipRepo }),
 
     createPost: (input: Parameters<typeof createPost>[0]) =>
-      createPost(input, { postRepo, membershipRepo, linkPreviewService }),
+      createPost(input, { postRepo, membershipRepo, userRepo, linkPreviewService }),
 
     listTimelinePosts: (input: Parameters<typeof listTimelinePosts>[0]) =>
-      listTimelinePosts(input, { postRepo, membershipRepo }),
+      listTimelinePosts(input, { postRepo, membershipRepo, userRepo, postReactionRepo }),
 
     getPost: (input: Parameters<typeof getPost>[0]) =>
-      getPost(input, { postRepo, membershipRepo }),
+      getPost(input, { postRepo, membershipRepo, userRepo, postReactionRepo }),
+
+    addPostReaction: (input: Parameters<typeof addPostReaction>[0]) =>
+      addPostReaction(input, { postRepo, membershipRepo, postReactionRepo }),
+
+    removePostReaction: (input: Parameters<typeof removePostReaction>[0]) =>
+      removePostReaction(input, { postRepo, membershipRepo, postReactionRepo }),
 
     addReply: (input: Parameters<typeof addReply>[0]) =>
-      addReply(input, { replyRepo, postRepo, membershipRepo }),
+      addReply(input, { replyRepo, postRepo, membershipRepo, userRepo }),
 
     listReplies: (input: Parameters<typeof listReplies>[0]) =>
-      listReplies(input, { replyRepo, postRepo, membershipRepo }),
+      listReplies(input, { replyRepo, postRepo, membershipRepo, userRepo }),
 
     getUnreadGroups: (input: Parameters<typeof getUnreadGroups>[0]) =>
       getUnreadGroups(input, { notificationRepo }),

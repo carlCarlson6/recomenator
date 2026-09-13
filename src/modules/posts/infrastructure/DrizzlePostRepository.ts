@@ -39,6 +39,7 @@ export class DrizzlePostRepository implements PostRepository {
         externalUrl: post.externalUrl,
         previewImageUrl: post.previewImageUrl,
         previewEmbedHtml: post.previewEmbedHtml,
+        rating: post.rating,
         createdAt: post.createdAt,
       })
       .onConflictDoUpdate({
@@ -49,6 +50,7 @@ export class DrizzlePostRepository implements PostRepository {
           externalUrl: post.externalUrl,
           previewImageUrl: post.previewImageUrl,
           previewEmbedHtml: post.previewEmbedHtml,
+          rating: post.rating,
         },
       });
   }
