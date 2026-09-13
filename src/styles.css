@@ -12,9 +12,16 @@
   --color-border: #e2e8f0;
   --color-card: #ffffff;
   --color-card-foreground: #0f172a;
+  --color-ring: #4f46e5;
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
+}
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 @layer base {
@@ -24,6 +31,20 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+  }
+
+  [data-theme="dark"] {
+    --color-background: #0f172a;
+    --color-foreground: #f8fafc;
+    --color-primary: #818cf8;
+    --color-primary-foreground: #0f172a;
+    --color-muted: #1e293b;
+    --color-muted-foreground: #94a3b8;
+    --color-border: #334155;
+    --color-card: #1e293b;
+    --color-card-foreground: #f8fafc;
+    --color-ring: #818cf8;
+    color-scheme: dark;
   }
 }
 

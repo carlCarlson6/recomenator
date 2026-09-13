@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
+import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 
 import { joinGroupFn } from '#/modules/groups/adapters/groups.functions.js'
@@ -29,7 +30,15 @@ function JoinGroupPage() {
 
   return (
     <main className="mx-auto max-w-xl px-4 py-12">
-      <h1 className="text-2xl font-bold">Join group</h1>
+      <Link
+        to="/"
+        className="inline-flex items-center gap-1 text-sm text-primary"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Link>
+
+      <h1 className="mt-6 text-2xl font-bold">Join group</h1>
       <p className="mt-2 text-muted-foreground">Invitation code: {inviteCode}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">

@@ -1,15 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, createFileRoute, useParams } from '@tanstack/react-router'
+import { Home, Plus, Settings } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import {
-  generateInviteFn,
-  getGroupFn,
-} from '#/modules/groups/adapters/groups.functions.js';
+import { getGroupFn } from '#/modules/groups/adapters/groups.functions.js';
 import { markGroupAsReadFn } from '#/modules/notifications/adapters/notifications.functions.js';
 import { listTimelinePostsFn } from '#/modules/posts/adapters/posts.functions.js';
-import { CreatePostForm } from '#/modules/posts/ui/CreatePostForm.js';
 import { PostCard } from '#/modules/posts/ui/PostCard.js';
+import { BottomBar, BottomBarItem } from '#/shared/ui/BottomBar.js';
 import type { Category } from '#/shared/infrastructure/db/schema.js';
 
 export const Route = createFileRoute('/groups/$groupId/')({
@@ -39,13 +37,6 @@ function GroupPage() {
     queryFn: () => listTimelinePostsFn({ data: { groupId, category } }),
   })
 
-  const generateInvite = useMutation({
-    mutationFn: generateInviteFn,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups', groupId, 'invite'] })
-    },
-  })
-
   const markRead = useMutation({
     mutationFn: markGroupAsReadFn,
     onSuccess: () => {
@@ -57,110 +48,82 @@ function GroupPage() {
     markRead.mutate({ data: { groupId } })
   }, [groupId])
 
-  const [copied, setCopied] = useState(false)
-
   if (!group) {
     return <div className="p-12 text-center">Loading...</div>
   }
 
-  const inviteCode = generateInvite.data?.code
-  const inviteLink = inviteCode
-    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/groups/join/${inviteCode}`
-    : null
-
-  const copyLink = () => {
-    if (!inviteLink) return
-    navigator.clipboard.writeText(inviteLink)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
-    <main className="mx-auto max-w-xl px-4 py-12">
-      <div className="flex items-center justify-between">
+    <>
+      <main className="mx-auto max-w-xl px-4 py-12 pb-24">
         <h1 className="text-2xl font-bold">{group.name}</h1>
-        <Link
-          to="/groups/$groupId/settings"
-          params={{ groupId }}
-          className="text-sm text-primary"
-        >
-          Settings
-        </Link>
-      </div>
 
-      <div className="mt-6">
-        <button
-          onClick={() => generateInvite.mutate({ data: { groupId } })}
-          disabled={generateInvite.isPending}
-          className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
-        >
-          Generate invite link
-        </button>
-
-        {generateInvite.error && (
-          <p className="mt-2 text-sm text-red-600">
-            {generateInvite.error instanceof Error
-              ? generateInvite.error.message
-              : 'Failed to generate invite'}
-          </p>
-        )}
-
-        {inviteLink && (
-          <div className="mt-4 flex items-center gap-2">
-            <input
-              readOnly
-              value={inviteLink}
-              className="flex-1 rounded-md border border-border bg-muted px-3 py-2 text-sm"
-            />
+        <div className="mt-10">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
             <button
-              onClick={copyLink}
-              className="rounded-md border border-border px-3 py-2 text-sm"
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-10">
-        <CreatePostForm groupId={groupId} />
-      </div>
-
-      <div className="mt-10">
-        <div className="flex items-center gap-2 overflow-x-auto pb-2">
-          <button
-            onClick={() => setCategory(undefined)}
-            className={`rounded-full px-3 py-1 text-sm ${
-              category === undefined
-                ? 'bg-primary text-primary-foreground'
-                : 'border border-border'
-            }`}
-          >
-            All
-          </button>
-          {categories.map((c) => (
-            <button
-              key={c.value}
-              onClick={() => setCategory(c.value)}
-              className={`rounded-full px-3 py-1 text-sm whitespace-nowrap ${
-                category === c.value
+              onClick={() => setCategory(undefined)}
+              className={`rounded-full px-3 py-1 text-sm ${
+                category === undefined
                   ? 'bg-primary text-primary-foreground'
                   : 'border border-border'
               }`}
             >
-              {c.label}
+              All
             </button>
-          ))}
-        </div>
+            {categories.map((c) => (
+              <button
+                key={c.value}
+                onClick={() => setCategory(c.value)}
+                className={`rounded-full px-3 py-1 text-sm whitespace-nowrap ${
+                  category === c.value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border border-border'
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
 
-        <div className="mt-6 space-y-4">
-          {posts.length === 0 ? (
-            <p className="text-muted-foreground">No recommendations yet.</p>
-          ) : (
-            posts.map((post) => <PostCard key={post.id} post={post} />)
-          )}
+          <div className="mt-6 space-y-4">
+            {posts.length === 0 ? (
+              <p className="text-muted-foreground">No recommendations yet.</p>
+            ) : (
+              posts.map((post) => <PostCard key={post.id} post={post} />)
+            )}
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+
+      <BottomBar>
+        <Link to="/" className="flex-1">
+          <BottomBarItem>
+            <Home className="h-5 w-5" />
+            <span>Home</span>
+          </BottomBarItem>
+        </Link>
+
+        <Link
+          to="/groups/$groupId/posts/new"
+          params={{ groupId }}
+          className="flex-1"
+        >
+          <BottomBarItem>
+            <Plus className="h-5 w-5" />
+            <span>Recommend</span>
+          </BottomBarItem>
+        </Link>
+
+        <Link
+          to="/groups/$groupId/settings"
+          params={{ groupId }}
+          className="flex-1"
+        >
+          <BottomBarItem>
+            <Settings className="h-5 w-5" />
+            <span>Settings</span>
+          </BottomBarItem>
+        </Link>
+      </BottomBar>
+    </>
   )
 }

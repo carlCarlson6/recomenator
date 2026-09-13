@@ -1,17 +1,33 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { useQuery } from '@tanstack/react-query'
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 
 import { listMyGroupsFn } from '#/modules/groups/adapters/groups.functions.js'
 import { getUnreadGroupsFn } from '#/modules/notifications/adapters/notifications.functions.js'
 
-export const Route = createFileRoute('/')({ component: Home })
+export const Route = createFileRoute('/')({
+  component: Home,
+  loader: async ({ context }) => {
+    if (!context.user) {
+      return { groups: [] }
+    }
+
+    const groups = await listMyGroupsFn()
+
+    if (groups.length === 1) {
+      throw redirect({
+        to: '/groups/$groupId',
+        params: { groupId: groups[0].id },
+        throw: true,
+      })
+    }
+
+    return { groups }
+  },
+})
 
 function Home() {
-  const { data: groups = [] } = useQuery({
-    queryKey: ['groups'],
-    queryFn: () => listMyGroupsFn(),
-  })
+  const { groups } = Route.useLoaderData()
 
   const { data: unread = [] } = useQuery({
     queryKey: ['unread'],

@@ -12,7 +12,13 @@ const categories: { value: Category; label: string }[] = [
   { value: 'MISC', label: 'Miscellaneous' },
 ];
 
-export function CreatePostForm({ groupId }: { groupId: string }) {
+export function CreatePostForm({
+  groupId,
+  onSuccess,
+}: {
+  groupId: string;
+  onSuccess?: () => void;
+}) {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -27,6 +33,7 @@ export function CreatePostForm({ groupId }: { groupId: string }) {
       setDescription('');
       setExternalUrl('');
       setCategory('MISC');
+      onSuccess?.();
     },
   });
 

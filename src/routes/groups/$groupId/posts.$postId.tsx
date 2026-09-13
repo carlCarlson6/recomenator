@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute, useParams } from '@tanstack/react-router';
+import { ArrowLeft, Users } from 'lucide-react';
 
 import { getPostFn } from '#/modules/posts/adapters/posts.functions.js';
 import { PostCard } from '#/modules/posts/ui/PostCard.js';
@@ -30,13 +31,24 @@ function PostDetailPage() {
 
   return (
     <main className="mx-auto max-w-xl px-4 py-12">
-      <Link
-        to="/groups/$groupId"
-        params={{ groupId }}
-        className="text-sm text-primary"
-      >
-        ← Back to group
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          to="/groups/$groupId"
+          params={{ groupId }}
+          className="inline-flex items-center gap-1 text-sm text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to group
+        </Link>
+
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-sm text-primary"
+        >
+          <Users className="h-4 w-4" />
+          My groups
+        </Link>
+      </div>
 
       <div className="mt-6">
         <PostCard post={post} />

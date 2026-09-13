@@ -5,8 +5,17 @@ import { HeadContent, Link, Scripts, createRootRoute } from '@tanstack/react-rou
 import '#/env/client.js'
 import { getCurrentUserFn } from '#/modules/auth/adapters/auth.functions.js'
 import { queryClient } from '#/shared/infrastructure/queryClient.js'
+import { ThemeProvider } from '#/shared/ui/ThemeProvider.js'
 
 import appCss from '../styles.css?url'
+
+const themeScript = `
+  (function() {
+    const theme = localStorage.theme || 'system';
+    const resolved = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', resolved);
+  })();
+`;
 
 export const Route = createRootRoute({
   head: () => ({
@@ -57,11 +66,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
         <ClerkProvider>
           <QueryClientProvider client={queryClient}>
-            {children}
+            <ThemeProvider>{children}</ThemeProvider>
           </QueryClientProvider>
         </ClerkProvider>
 
