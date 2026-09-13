@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Bookmark, Eye, ThumbsDown, ThumbsUp, type LucideIcon } from 'lucide-react';
+import { Bookmark, Eye, MessageCircle, ThumbsDown, ThumbsUp, type LucideIcon } from 'lucide-react';
 
 import type { PostDto } from '../application/CreatePost.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
@@ -117,9 +117,15 @@ export function PostCard({ post }: { post: PostDto }) {
       <Link
         to="/groups/$groupId/posts/$postId"
         params={{ groupId: post.groupId, postId: post.id }}
-        className="mt-3 inline-block text-sm text-primary"
+        className="mt-3 inline-flex items-center gap-1.5 text-sm text-primary"
       >
-        View replies
+        <MessageCircle className="h-4 w-4" />
+        <span>View replies</span>
+        {post.replyCount > 0 && (
+          <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium">
+            {post.replyCount}
+          </span>
+        )}
       </Link>
     </article>
   );

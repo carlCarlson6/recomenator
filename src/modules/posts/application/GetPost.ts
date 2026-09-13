@@ -9,6 +9,7 @@ import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
 import { Post } from '../domain/Post.js';
 import type { PostRepository } from '../domain/ports/PostRepository.js';
 import type { PostReactionRepository } from '../domain/ports/PostReactionRepository.js';
+import type { ReplyRepository } from '#/modules/replies/domain/ports/ReplyRepository.js';
 import type { PostDto } from './CreatePost.js';
 
 class PostNotFoundError extends DomainError {
@@ -23,6 +24,7 @@ function buildDto(
   authorDisplayName: string,
   reactions: Array<{ type: ReactionType; count: number }>,
   myReactions: ReactionType[],
+  replyCount: number,
 ): PostDto {
   return {
     id: post.id,
@@ -38,6 +40,7 @@ function buildDto(
     authorDisplayName,
     reactions,
     myReactions,
+    replyCount,
     createdAt: post.createdAt,
   };
 }
@@ -49,6 +52,7 @@ export async function getPost(
     membershipRepo: MembershipRepository;
     userRepo: UserRepository;
     postReactionRepo: PostReactionRepository;
+    replyRepo: ReplyRepository;
   },
 ): Promise<Result<PostDto, DomainError>> {
   const post = await deps.postRepo.findById(input.postId);
@@ -57,11 +61,12 @@ export async function getPost(
   const membership = await deps.membershipRepo.findByUserAndGroup(input.userId, post.groupId);
   if (!membership) return err(new NotGroupMemberError());
 
-  const [authorMembership, author, counts, myReactions] = await Promise.all([
+  const [authorMembership, author, counts, myReactions, replyCounts] = await Promise.all([
     deps.membershipRepo.findByUserAndGroup(post.authorId, post.groupId),
     deps.userRepo.findById(post.authorId),
     deps.postReactionRepo.findCountsByPostIds([post.id]),
     deps.postReactionRepo.findByPostIdsAndUserId([post.id], input.userId),
+    deps.replyRepo.countByPostIds([post.id]),
   ]);
 
   const authorDisplayName =
@@ -78,5 +83,7 @@ export async function getPost(
     count: countsMap.get(type) ?? 0,
   }));
 
-  return ok(buildDto(post, authorDisplayName, reactions, myReactions.map((r) => r.type)));
+  const replyCount = replyCounts.find((c) => c.postId === post.id)?.count ?? 0;
+
+  return ok(buildDto(post, authorDisplayName, reactions, myReactions.map((r) => r.type), replyCount));
 }
