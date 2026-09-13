@@ -9,7 +9,8 @@ export function ReplyList({ replies }: { replies: ReplyDto[] }) {
     <div className="space-y-3">
       {replies.map((reply) => (
         <div key={reply.id} className="rounded-md border border-border p-3">
-          <p className="text-sm">{reply.content}</p>
+          <p className="text-xs font-medium text-primary">{reply.authorDisplayName}</p>
+          <p className="mt-1 text-sm">{reply.content}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {reply.createdAt.toLocaleString()}
           </p>

@@ -24,6 +24,7 @@ export function CreatePostForm({
   const [description, setDescription] = useState('');
   const [externalUrl, setExternalUrl] = useState('');
   const [category, setCategory] = useState<Category>('MISC');
+  const [rating, setRating] = useState<number | ''>('');
 
   const createPost = useMutation({
     mutationFn: createPostFn,
@@ -33,6 +34,7 @@ export function CreatePostForm({
       setDescription('');
       setExternalUrl('');
       setCategory('MISC');
+      setRating('');
       onSuccess?.();
     },
   });
@@ -46,6 +48,7 @@ export function CreatePostForm({
         description: description || undefined,
         externalUrl: externalUrl || undefined,
         category,
+        rating: rating === '' ? undefined : rating,
       },
     });
   };
@@ -68,6 +71,26 @@ export function CreatePostForm({
             </option>
           ))}
         </select>
+      </div>
+
+      <div>
+        <label htmlFor="rating" className="block text-sm font-medium">
+          Rating (optional)
+        </label>
+        <input
+          id="rating"
+          type="number"
+          min={1}
+          max={10}
+          step={1}
+          value={rating}
+          onChange={(e) => {
+            const value = e.target.value === '' ? '' : Number(e.target.value);
+            setRating(value === '' ? '' : Math.min(10, Math.max(1, value)));
+          }}
+          className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2"
+          placeholder="1–10"
+        />
       </div>
 
       <div>

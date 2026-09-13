@@ -1,14 +1,17 @@
-import { index, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { check, index, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 import { createId } from '#/shared/kernel/idGenerator.js';
 import { timestamps } from './timestamps.js';
 
 export type Role = 'owner' | 'member';
 export type Category = 'VIDEO_GAMES' | 'MOVIES' | 'SHOWS' | 'MUSIC' | 'MISC';
+export type ReactionType = 'interested' | 'liked' | 'not_liked' | 'viewed';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey().notNull(),
   email: text('email').notNull(),
+  username: text('username'),
   avatarUrl: text('avatar_url'),
   ...timestamps,
 });
@@ -97,11 +100,13 @@ export const posts = pgTable(
     externalUrl: text('external_url'),
     previewImageUrl: text('preview_image_url'),
     previewEmbedHtml: text('preview_embed_html'),
+    rating: integer('rating'),
     ...timestamps,
   },
   (t) => [
     index('posts_group_id_created_at_idx').on(t.groupId, t.createdAt),
     index('posts_group_id_category_created_at_idx').on(t.groupId, t.category, t.createdAt),
+    check('posts_rating_check', sql`${t.rating} IS NULL OR ${t.rating} BETWEEN 1 AND 10`),
   ],
 );
 
@@ -122,4 +127,26 @@ export const replies = pgTable(
     ...timestamps,
   },
   (t) => [index('replies_post_id_created_at_idx').on(t.postId, t.createdAt)],
+);
+
+export const postReactions = pgTable(
+  'post_reactions',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => createId('rct'))
+      .notNull(),
+    postId: text('post_id')
+      .references(() => posts.id, { onDelete: 'cascade' })
+      .notNull(),
+    userId: text('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    type: text('type').$type<ReactionType>().notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex('post_reactions_post_id_user_id_type_unique').on(t.postId, t.userId, t.type),
+    index('post_reactions_post_id_type_idx').on(t.postId, t.type),
+  ],
 );
