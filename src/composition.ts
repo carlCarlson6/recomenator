@@ -69,10 +69,10 @@ export function createUseCases() {
       createPost(input, { postRepo, membershipRepo, userRepo, linkPreviewService }),
 
     listTimelinePosts: (input: Parameters<typeof listTimelinePosts>[0]) =>
-      listTimelinePosts(input, { postRepo, membershipRepo, userRepo, postReactionRepo }),
+      listTimelinePosts(input, { postRepo, membershipRepo, userRepo, postReactionRepo, replyRepo }),
 
     getPost: (input: Parameters<typeof getPost>[0]) =>
-      getPost(input, { postRepo, membershipRepo, userRepo, postReactionRepo }),
+      getPost(input, { postRepo, membershipRepo, userRepo, postReactionRepo, replyRepo }),
 
     addPostReaction: (input: Parameters<typeof addPostReaction>[0]) =>
       addPostReaction(input, { postRepo, membershipRepo, postReactionRepo }),

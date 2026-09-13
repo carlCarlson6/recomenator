@@ -13,6 +13,7 @@ import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.j
 import { Post } from '../domain/Post.js';
 import type { PostRepository } from '../domain/ports/PostRepository.js';
 import type { PostReactionRepository } from '../domain/ports/PostReactionRepository.js';
+import type { ReplyRepository } from '#/modules/replies/domain/ports/ReplyRepository.js';
 
 export type CreatePostInput = {
   groupId: string;
@@ -38,6 +39,7 @@ export type PostDto = {
   authorDisplayName: string;
   reactions: Array<{ type: ReactionType; count: number }>;
   myReactions: ReactionType[];
+  replyCount: number;
   createdAt: Date;
 };
 
@@ -46,6 +48,7 @@ function toDto(
   authorDisplayName: string,
   reactions: Array<{ type: ReactionType; count: number }>,
   myReactions: ReactionType[],
+  replyCount: number,
 ): PostDto {
   return {
     id: post.id,
@@ -61,6 +64,7 @@ function toDto(
     authorDisplayName,
     reactions,
     myReactions,
+    replyCount,
     createdAt: post.createdAt,
   };
 }
@@ -111,7 +115,7 @@ export async function createPost(
   const authorDisplayName =
     membership.displayName || author?.username || author?.email || 'Unknown';
 
-  return ok(toDto(post, authorDisplayName, [], []));
+  return ok(toDto(post, authorDisplayName, [], [], 0));
 }
 
 export async function listTimelinePosts(
@@ -121,6 +125,7 @@ export async function listTimelinePosts(
     membershipRepo: MembershipRepository;
     userRepo: UserRepository;
     postReactionRepo: PostReactionRepository;
+    replyRepo: ReplyRepository;
   },
 ): Promise<Result<PostDto[], DomainError>> {
   const membership = await deps.membershipRepo.findByUserAndGroup(input.userId, input.groupId);
@@ -130,11 +135,12 @@ export async function listTimelinePosts(
   if (posts.length === 0) return ok([]);
 
   const postIds = posts.map((p) => p.id);
-  const [groupMemberships, users, counts, myReactions] = await Promise.all([
+  const [groupMemberships, users, counts, myReactions, replyCounts] = await Promise.all([
     deps.membershipRepo.findByGroupId(input.groupId),
     deps.userRepo.findByIds(posts.map((p) => p.authorId)),
     deps.postReactionRepo.findCountsByPostIds(postIds),
     deps.postReactionRepo.findByPostIdsAndUserId(postIds, input.userId),
+    deps.replyRepo.countByPostIds(postIds),
   ]);
 
   const membershipMap = new Map(groupMemberships.map((m) => [`${m.userId}:${m.groupId}`, m]));
@@ -152,6 +158,8 @@ export async function listTimelinePosts(
     myReactionsMap.get(reaction.postId)!.push(reaction.type);
   }
 
+  const replyCountMap = new Map(replyCounts.map((c) => [c.postId, c.count]));
+
   return ok(
     posts.map((post) => {
       const allTypes: ReactionType[] = ['interested', 'liked', 'not_liked', 'viewed'];
@@ -166,6 +174,7 @@ export async function listTimelinePosts(
         resolveDisplayName(post.authorId, post.groupId, membershipMap, userMap),
         reactions,
         myReactionsMap.get(post.id) ?? [],
+        replyCountMap.get(post.id) ?? 0,
       );
     }),
   );

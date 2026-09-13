@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm';
+import { asc, count, eq, inArray } from 'drizzle-orm';
 
 import { db } from '#/shared/infrastructure/db/client.js';
 import { replies } from '#/shared/infrastructure/db/schema.js';
@@ -14,6 +14,18 @@ export class DrizzleReplyRepository implements ReplyRepository {
       .where(eq(replies.postId, postId))
       .orderBy(asc(replies.createdAt));
     return rows.map(Reply.reconstitute);
+  }
+
+  async countByPostIds(postIds: string[]): Promise<Array<{ postId: string; count: number }>> {
+    if (postIds.length === 0) return [];
+
+    const rows = await db
+      .select({ postId: replies.postId, count: count() })
+      .from(replies)
+      .where(inArray(replies.postId, postIds))
+      .groupBy(replies.postId);
+
+    return rows.map((row) => ({ postId: row.postId, count: Number(row.count) }));
   }
 
   async save(reply: Reply): Promise<void> {
