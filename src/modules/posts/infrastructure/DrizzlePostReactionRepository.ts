@@ -1,7 +1,12 @@
 import { and, eq, inArray, sql } from 'drizzle-orm';
 
 import { db } from '#/shared/infrastructure/db/client.js';
-import { postReactions, type ReactionType } from '#/shared/infrastructure/db/schema.js';
+import {
+  postReactions,
+  posts,
+  type Category,
+  type ReactionType,
+} from '#/shared/infrastructure/db/schema.js';
 
 import { PostReaction } from '../domain/PostReaction.js';
 import type { PostReactionRepository } from '../domain/ports/PostReactionRepository.js';
@@ -36,6 +41,41 @@ export class DrizzlePostReactionRepository implements PostReactionRepository {
       .where(and(inArray(postReactions.postId, postIds), eq(postReactions.userId, userId)));
 
     return rows.map(PostReaction.reconstitute);
+  }
+
+  async findByUserIdAndGroupId(input: {
+    userId: string;
+    groupId: string;
+    categories?: Category[];
+    types?: ReactionType[];
+  }): Promise<Array<{ postId: string; type: ReactionType; createdAt: Date }>> {
+    const rows = await db
+      .select({
+        postId: postReactions.postId,
+        type: postReactions.type,
+        createdAt: postReactions.createdAt,
+      })
+      .from(postReactions)
+      .innerJoin(posts, eq(postReactions.postId, posts.id))
+      .where(
+        and(
+          eq(postReactions.userId, input.userId),
+          eq(posts.groupId, input.groupId),
+          input.categories && input.categories.length > 0
+            ? inArray(posts.category, input.categories)
+            : undefined,
+          input.types && input.types.length > 0
+            ? inArray(postReactions.type, input.types)
+            : undefined,
+        ),
+      )
+      .orderBy(sql`${postReactions.createdAt} desc`);
+
+    return rows.map((row) => ({
+      postId: row.postId,
+      type: row.type as ReactionType,
+      createdAt: row.createdAt,
+    }));
   }
 
   async save(reaction: PostReaction): Promise<void> {

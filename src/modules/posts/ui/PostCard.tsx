@@ -25,6 +25,7 @@ export function PostCard({ post }: { post: PostDto }) {
     mutationFn: addPostReactionFn,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups', post.groupId, 'timeline'] });
+      queryClient.invalidateQueries({ queryKey: ['groups', post.groupId, 'interactions'] });
       queryClient.invalidateQueries({ queryKey: ['posts', post.id] });
     },
   });
@@ -33,6 +34,7 @@ export function PostCard({ post }: { post: PostDto }) {
     mutationFn: removePostReactionFn,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups', post.groupId, 'timeline'] });
+      queryClient.invalidateQueries({ queryKey: ['groups', post.groupId, 'interactions'] });
       queryClient.invalidateQueries({ queryKey: ['posts', post.id] });
     },
   });

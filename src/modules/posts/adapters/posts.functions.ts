@@ -6,6 +6,9 @@ import { protectedMiddleware } from '#/shared/infrastructure/auth/protectedMiddl
 import { unwrapResult } from '#/shared/kernel/unwrapResult.js';
 import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js';
 
+const categorySchema = z.enum(['VIDEO_GAMES', 'MOVIES', 'SHOWS', 'MUSIC', 'MISC']);
+const reactionTypeSchema = z.enum(['interested', 'liked', 'not_liked', 'viewed']);
+
 const createPostSchema = z.object({
   groupId: z.string().min(1),
   category: z.enum(['VIDEO_GAMES', 'MOVIES', 'SHOWS', 'MUSIC', 'MISC']),
@@ -35,7 +38,7 @@ export const createPostFn = createServerFn({ method: 'POST' })
 
 const timelineSchema = z.object({
   groupId: z.string().min(1),
-  category: z.enum(['VIDEO_GAMES', 'MOVIES', 'SHOWS', 'MUSIC', 'MISC']).optional(),
+  category: categorySchema.optional(),
 });
 
 export const listTimelinePostsFn = createServerFn({ method: 'GET' })
@@ -48,6 +51,27 @@ export const listTimelinePostsFn = createServerFn({ method: 'GET' })
         groupId: data.groupId,
         userId: context.userId,
         category: data.category as Category | undefined,
+      }),
+    );
+  });
+
+const myInteractionsSchema = z.object({
+  groupId: z.string().min(1),
+  categories: z.array(categorySchema).optional(),
+  types: z.array(reactionTypeSchema).optional(),
+});
+
+export const listMyInteractionsFn = createServerFn({ method: 'GET' })
+  .middleware([protectedMiddleware])
+  .validator(myInteractionsSchema)
+  .handler(async ({ data, context }) => {
+    const { listMyInteractions } = createUseCases();
+    return unwrapResult(
+      await listMyInteractions({
+        groupId: data.groupId,
+        userId: context.userId,
+        categories: data.categories as Category[] | undefined,
+        types: data.types as ReactionType[] | undefined,
       }),
     );
   });
@@ -69,7 +93,7 @@ export const getPostFn = createServerFn({ method: 'GET' })
 
 const reactionSchema = z.object({
   postId: z.string().min(1),
-  type: z.enum(['interested', 'liked', 'not_liked', 'viewed']),
+  type: reactionTypeSchema,
 });
 
 export const addPostReactionFn = createServerFn({ method: 'POST' })

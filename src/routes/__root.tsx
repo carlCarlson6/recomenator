@@ -1,4 +1,6 @@
 import { ClerkProvider } from '@clerk/tanstack-react-start'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { HeadContent, Link, Scripts, createRootRoute } from '@tanstack/react-router'
 
@@ -75,6 +77,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           </QueryClientProvider>
         </ClerkProvider>
 
+        <Analytics />
+        <SpeedInsights />
         <Scripts />
       </body>
     </html>

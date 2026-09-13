@@ -148,5 +148,6 @@ export const postReactions = pgTable(
   (t) => [
     uniqueIndex('post_reactions_post_id_user_id_type_unique').on(t.postId, t.userId, t.type),
     index('post_reactions_post_id_type_idx').on(t.postId, t.type),
+    index('post_reactions_user_id_type_created_at_idx').on(t.userId, t.type, t.createdAt),
   ],
 );
