@@ -1,2 +1,1 @@
-- create drafts of the recomendations before posting them
 - notifications te see if someone has replied or reacted to your post
