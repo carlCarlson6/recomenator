@@ -16,6 +16,7 @@ const createPostSchema = z.object({
   description: z.string().max(2000).trim().optional(),
   externalUrl: z.string().url().optional(),
   rating: z.number().int().min(1).max(10).optional(),
+  draftId: z.string().min(1).optional(),
 });
 
 export const createPostFn = createServerFn({ method: 'POST' })
@@ -32,6 +33,70 @@ export const createPostFn = createServerFn({ method: 'POST' })
         description: data.description,
         externalUrl: data.externalUrl,
         rating: data.rating,
+        draftId: data.draftId,
+      }),
+    );
+  });
+
+const saveDraftSchema = z.object({
+  draftId: z.string().min(1).optional(),
+  groupId: z.string().min(1),
+  category: z.enum(['VIDEO_GAMES', 'MOVIES', 'SHOWS', 'MUSIC', 'BOOKS', 'MISC']),
+  title: z.string().max(200).trim().optional().or(z.literal('')),
+  description: z.string().max(2000).trim().optional().or(z.literal('')),
+  externalUrl: z.string().url().optional().or(z.literal('')),
+  rating: z.number().int().min(1).max(10).optional(),
+});
+
+export const saveDraftFn = createServerFn({ method: 'POST' })
+  .middleware([protectedMiddleware])
+  .validator(saveDraftSchema)
+  .handler(async ({ data, context }) => {
+    const { saveDraft } = createUseCases();
+    return unwrapResult(
+      await saveDraft({
+        draftId: data.draftId,
+        groupId: data.groupId,
+        authorId: context.userId,
+        category: data.category as Category,
+        title: data.title,
+        description: data.description,
+        externalUrl: data.externalUrl,
+        rating: data.rating,
+      }),
+    );
+  });
+
+const listDraftsSchema = z.object({
+  groupId: z.string().min(1),
+});
+
+export const listDraftsFn = createServerFn({ method: 'GET' })
+  .middleware([protectedMiddleware])
+  .validator(listDraftsSchema)
+  .handler(async ({ data, context }) => {
+    const { listDrafts } = createUseCases();
+    return unwrapResult(
+      await listDrafts({
+        groupId: data.groupId,
+        authorId: context.userId,
+      }),
+    );
+  });
+
+const deleteDraftSchema = z.object({
+  draftId: z.string().min(1),
+});
+
+export const deleteDraftFn = createServerFn({ method: 'POST' })
+  .middleware([protectedMiddleware])
+  .validator(deleteDraftSchema)
+  .handler(async ({ data, context }) => {
+    const { deleteDraft } = createUseCases();
+    return unwrapResult(
+      await deleteDraft({
+        draftId: data.draftId,
+        authorId: context.userId,
       }),
     );
   });

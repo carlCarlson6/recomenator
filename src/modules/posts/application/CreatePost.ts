@@ -14,6 +14,7 @@ import { Post } from '../domain/Post.js';
 import type { PostRepository } from '../domain/ports/PostRepository.js';
 import type { PostReactionRepository } from '../domain/ports/PostReactionRepository.js';
 import type { ReplyRepository } from '#/modules/replies/domain/ports/ReplyRepository.js';
+import type { DraftRepository } from '../domain/ports/DraftRepository.js';
 
 export type CreatePostInput = {
   groupId: string;
@@ -23,6 +24,7 @@ export type CreatePostInput = {
   description?: string | null;
   externalUrl?: string | null;
   rating?: number | null;
+  draftId?: string;
 };
 
 export type PostDto = {
@@ -92,6 +94,7 @@ export async function createPost(
     membershipRepo: MembershipRepository;
     userRepo: UserRepository;
     linkPreviewService: LinkPreviewService;
+    draftRepo: DraftRepository;
   },
 ): Promise<Result<PostDto, DomainError>> {
   const membership = await deps.membershipRepo.findByUserAndGroup(input.authorId, input.groupId);
@@ -110,6 +113,10 @@ export async function createPost(
   }
 
   await deps.postRepo.save(post);
+
+  if (input.draftId) {
+    await deps.draftRepo.deleteByIdAndAuthorId(input.draftId, input.authorId);
+  }
 
   const [author] = await deps.userRepo.findByIds([post.authorId]);
   const authorDisplayName =

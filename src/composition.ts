@@ -17,8 +17,14 @@ import {
   addPostReaction,
   removePostReaction,
 } from './modules/posts/application/PostReactionUseCases.js';
+import {
+  deleteDraft,
+  listDrafts,
+  saveDraft,
+} from './modules/posts/application/DraftUseCases.js';
 import { DrizzlePostRepository } from './modules/posts/infrastructure/DrizzlePostRepository.js';
 import { DrizzlePostReactionRepository } from './modules/posts/infrastructure/DrizzlePostReactionRepository.js';
+import { DrizzleDraftRepository } from './modules/posts/infrastructure/DrizzleDraftRepository.js';
 import { OpenGraphLinkPreviewService } from './modules/linkPreview/infrastructure/OpenGraphLinkPreviewService.js';
 import { addReply, listReplies } from './modules/replies/application/ReplyUseCases.js';
 import { DrizzleReplyRepository } from './modules/replies/infrastructure/DrizzleReplyRepository.js';
@@ -33,6 +39,7 @@ const groupRepo = new DrizzleGroupRepository();
 const inviteRepo = new DrizzleInviteRepository();
 const membershipRepo = new DrizzleMembershipRepository();
 const postRepo = new DrizzlePostRepository();
+const draftRepo = new DrizzleDraftRepository();
 const postReactionRepo = new DrizzlePostReactionRepository();
 const replyRepo = new DrizzleReplyRepository();
 const notificationRepo = new DrizzleNotificationRepository();
@@ -67,7 +74,16 @@ export function createUseCases() {
       updateDisplayName(input, { membershipRepo }),
 
     createPost: (input: Parameters<typeof createPost>[0]) =>
-      createPost(input, { postRepo, membershipRepo, userRepo, linkPreviewService }),
+      createPost(input, { postRepo, membershipRepo, userRepo, linkPreviewService, draftRepo }),
+
+    saveDraft: (input: Parameters<typeof saveDraft>[0]) =>
+      saveDraft(input, { draftRepo, membershipRepo }),
+
+    listDrafts: (input: Parameters<typeof listDrafts>[0]) =>
+      listDrafts(input, { draftRepo, membershipRepo }),
+
+    deleteDraft: (input: Parameters<typeof deleteDraft>[0]) =>
+      deleteDraft(input, { draftRepo }),
 
     listTimelinePosts: (input: Parameters<typeof listTimelinePosts>[0]) =>
       listTimelinePosts(input, { postRepo, membershipRepo, userRepo, postReactionRepo, replyRepo }),
