@@ -18,6 +18,7 @@ const categories: { value: Category; label: string }[] = [
   { value: 'MOVIES', label: 'Movies' },
   { value: 'SHOWS', label: 'Shows' },
   { value: 'MUSIC', label: 'Music' },
+  { value: 'BOOKS', label: 'Books' },
   { value: 'MISC', label: 'Miscellaneous' },
 ];
 

@@ -65,7 +65,9 @@ export function PostCard({ post }: { post: PostDto }) {
       <p className="mt-1 text-xs text-muted-foreground">by {post.authorDisplayName}</p>
 
       {post.description && (
-        <p className="mt-2 text-sm text-muted-foreground">{post.description}</p>
+        <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+          {post.description}
+        </p>
       )}
 
       {post.previewEmbedHtml ? (
