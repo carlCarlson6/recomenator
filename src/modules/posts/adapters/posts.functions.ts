@@ -6,12 +6,12 @@ import { protectedMiddleware } from '#/shared/infrastructure/auth/protectedMiddl
 import { unwrapResult } from '#/shared/kernel/unwrapResult.js';
 import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js';
 
-const categorySchema = z.enum(['VIDEO_GAMES', 'MOVIES', 'SHOWS', 'MUSIC', 'MISC']);
+const categorySchema = z.enum(['VIDEO_GAMES', 'MOVIES', 'SHOWS', 'MUSIC', 'BOOKS', 'MISC']);
 const reactionTypeSchema = z.enum(['interested', 'liked', 'not_liked', 'viewed']);
 
 const createPostSchema = z.object({
   groupId: z.string().min(1),
-  category: z.enum(['VIDEO_GAMES', 'MOVIES', 'SHOWS', 'MUSIC', 'MISC']),
+  category: z.enum(['VIDEO_GAMES', 'MOVIES', 'SHOWS', 'MUSIC', 'BOOKS', 'MISC']),
   title: z.string().min(1).max(200).trim(),
   description: z.string().max(2000).trim().optional(),
   externalUrl: z.string().url().optional(),

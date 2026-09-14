@@ -5,7 +5,7 @@ import { createId } from '#/shared/kernel/idGenerator.js';
 import { timestamps } from './timestamps.js';
 
 export type Role = 'owner' | 'member';
-export type Category = 'VIDEO_GAMES' | 'MOVIES' | 'SHOWS' | 'MUSIC' | 'MISC';
+export type Category = 'VIDEO_GAMES' | 'MOVIES' | 'SHOWS' | 'MUSIC' | 'BOOKS' | 'MISC';
 export type ReactionType = 'interested' | 'liked' | 'not_liked' | 'viewed';
 
 export const users = pgTable('users', {

@@ -1,6 +1,6 @@
 # Recomenator
 
-A private group app for friends to share recommendations about video games, movies, shows, music, and miscellaneous content.
+A private group app for friends to share recommendations about video games, movies, shows, music, books, and miscellaneous content.
 
 ## What it does
 
