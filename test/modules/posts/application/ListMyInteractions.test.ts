@@ -154,6 +154,10 @@ class InMemoryUserRepository implements UserRepository {
 }
 
 class InMemoryReplyRepository implements ReplyRepository {
+  async findById(): Promise<null> {
+    return null;
+  }
+
   async findByPostId(): Promise<never[]> {
     return [];
   }

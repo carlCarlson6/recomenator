@@ -8,6 +8,7 @@ import { unwrapResult } from '#/shared/kernel/unwrapResult.js';
 const addReplySchema = z.object({
   postId: z.string().min(1),
   content: z.string().min(1).max(1000).trim(),
+  parentId: z.string().min(1).optional(),
 });
 
 export const addReplyFn = createServerFn({ method: 'POST' })
@@ -20,6 +21,7 @@ export const addReplyFn = createServerFn({ method: 'POST' })
         postId: data.postId,
         authorId: context.userId,
         content: data.content,
+        parentId: data.parentId,
       }),
     );
   });
@@ -34,6 +36,21 @@ export const listRepliesFn = createServerFn({ method: 'GET' })
     return unwrapResult(
       await listReplies({
         postId: data.postId,
+        userId: context.userId,
+      }),
+    );
+  });
+
+const deleteReplySchema = z.object({ replyId: z.string().min(1) });
+
+export const deleteReplyFn = createServerFn({ method: 'POST' })
+  .middleware([protectedMiddleware])
+  .validator(deleteReplySchema)
+  .handler(async ({ data, context }) => {
+    const { deleteReply } = createUseCases();
+    return unwrapResult(
+      await deleteReply({
+        replyId: data.replyId,
         userId: context.userId,
       }),
     );

@@ -10,7 +10,7 @@ A private group app for friends to share recommendations about video games, movi
 - Members post recommendations under a fixed category with an optional description and external link.
 - The app fetches link previews (Open Graph, YouTube, Spotify embeds) when a post is created.
 - Members see a reverse-chronological timeline of group recommendations and filter by category.
-- Members reply to posts to start discussions.
+- Members reply to posts to start discussions, with Reddit-style nested reply threads (reply to any reply, collapsible threads, soft-deleted replies keep their children).
 - An in-app indicator shows groups with unread replies.
 
 ## Tech stack

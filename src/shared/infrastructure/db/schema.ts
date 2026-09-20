@@ -124,9 +124,14 @@ export const replies = pgTable(
       .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
     content: text('content').notNull(),
+    parentId: text('parent_id').references((): any => replies.id, { onDelete: 'no action' }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true, mode: 'date' }),
     ...timestamps,
   },
-  (t) => [index('replies_post_id_created_at_idx').on(t.postId, t.createdAt)],
+  (t) => [
+    index('replies_post_id_created_at_idx').on(t.postId, t.createdAt),
+    index('replies_parent_id_idx').on(t.parentId),
+  ],
 );
 
 export const drafts = pgTable(

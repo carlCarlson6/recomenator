@@ -67,7 +67,11 @@ function PostDetailPage() {
           <ReplyForm postId={postId} />
         </div>
         <div className="mt-6">
-          <ReplyList replies={replies} />
+          <ReplyList
+            replies={replies}
+            currentUserId={userId ?? undefined}
+            postId={postId}
+          />
         </div>
       </div>
     </main>
