@@ -54,12 +54,21 @@ async function seed() {
     })
     .returning();
 
-  await db.insert(replies).values({
-    id: 'rpl_seed_reply',
-    postId: post.id,
-    authorId: memberId,
-    content: 'One of my favorites!',
-  }).onConflictDoNothing();
+  await db.insert(replies).values([
+    {
+      id: 'rpl_seed_reply',
+      postId: post.id,
+      authorId: memberId,
+      content: 'One of my favorites!',
+    },
+    {
+      id: 'rpl_seed_nested_reply',
+      postId: post.id,
+      authorId: userId,
+      content: 'The hallway fight scene alone is worth the rewatch.',
+      parentId: 'rpl_seed_reply',
+    },
+  ]).onConflictDoNothing();
 
   console.log('Database seeded.');
   process.exit(0);

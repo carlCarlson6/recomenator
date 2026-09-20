@@ -27,7 +27,7 @@ import { DrizzlePostRepository } from './modules/posts/infrastructure/DrizzlePos
 import { DrizzlePostReactionRepository } from './modules/posts/infrastructure/DrizzlePostReactionRepository.js';
 import { DrizzleDraftRepository } from './modules/posts/infrastructure/DrizzleDraftRepository.js';
 import { OpenGraphLinkPreviewService } from './modules/linkPreview/infrastructure/OpenGraphLinkPreviewService.js';
-import { addReply, listReplies } from './modules/replies/application/ReplyUseCases.js';
+import { addReply, deleteReply, listReplies } from './modules/replies/application/ReplyUseCases.js';
 import { DrizzleReplyRepository } from './modules/replies/infrastructure/DrizzleReplyRepository.js';
 import {
   getUnreadGroups,
@@ -109,6 +109,9 @@ export function createUseCases() {
 
     listReplies: (input: Parameters<typeof listReplies>[0]) =>
       listReplies(input, { replyRepo, postRepo, membershipRepo, userRepo }),
+
+    deleteReply: (input: Parameters<typeof deleteReply>[0]) =>
+      deleteReply(input, { replyRepo }),
 
     getUnreadGroups: (input: Parameters<typeof getUnreadGroups>[0]) =>
       getUnreadGroups(input, { notificationRepo }),
