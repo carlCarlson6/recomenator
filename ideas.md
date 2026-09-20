@@ -1,4 +1,3 @@
 - notifications te see if someone has replied or reacted to your post
 - know who has reacted to the recommendation
 - replay to another coments
-- delete recomendations
