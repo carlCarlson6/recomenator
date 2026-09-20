@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Bookmark, Eye, MessageCircle, ThumbsDown, ThumbsUp, type LucideIcon } from 'lucide-react';
+import { Bookmark, Eye, MessageCircle, ThumbsDown, ThumbsUp, Trash2, type LucideIcon } from 'lucide-react';
+import { useState } from 'react';
 
+import { Modal } from '#/shared/ui/Modal.js';
 import type { PostDto } from '../application/CreatePost.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
-import { addPostReactionFn, removePostReactionFn } from '../adapters/posts.functions.js';
+import { addPostReactionFn, deletePostFn, removePostReactionFn } from '../adapters/posts.functions.js';
 
 const REACTION_CONFIG: Array<{
   type: ReactionType;
@@ -17,9 +19,19 @@ const REACTION_CONFIG: Array<{
   { type: 'viewed', label: 'Viewed', icon: Eye },
 ];
 
-export function PostCard({ post }: { post: PostDto }) {
+export function PostCard({
+  post,
+  currentUserId,
+  onDelete,
+}: {
+  post: PostDto;
+  currentUserId?: string;
+  onDelete?: () => void;
+}) {
   const queryClient = useQueryClient();
   const categoryLabel = post.category.replace('_', ' ');
+  const isAuthor = currentUserId === post.authorId;
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const addReaction = useMutation({
     mutationFn: addPostReactionFn,
@@ -38,6 +50,22 @@ export function PostCard({ post }: { post: PostDto }) {
       queryClient.invalidateQueries({ queryKey: ['posts', post.id] });
     },
   });
+
+  const deletePost = useMutation({
+    mutationFn: deletePostFn,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups', post.groupId, 'timeline'] });
+      queryClient.invalidateQueries({ queryKey: ['groups', post.groupId, 'interactions'] });
+      queryClient.invalidateQueries({ queryKey: ['posts', post.id] });
+      queryClient.invalidateQueries({ queryKey: ['unread'] });
+      onDelete?.();
+    },
+  });
+
+  const handleConfirmDelete = () => {
+    setIsModalOpen(false);
+    deletePost.mutate({ data: { postId: post.id } });
+  };
 
   const toggleReaction = (type: ReactionType) => {
     if (post.myReactions.includes(type)) {
@@ -118,19 +146,60 @@ export function PostCard({ post }: { post: PostDto }) {
         })}
       </div>
 
-      <Link
-        to="/groups/$groupId/posts/$postId"
-        params={{ groupId: post.groupId, postId: post.id }}
-        className="mt-3 inline-flex items-center gap-1.5 text-sm text-primary"
-      >
-        <MessageCircle className="h-4 w-4" />
-        <span>View replies</span>
-        {post.replyCount > 0 && (
-          <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium">
-            {post.replyCount}
-          </span>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <Link
+          to="/groups/$groupId/posts/$postId"
+          params={{ groupId: post.groupId, postId: post.id }}
+          className="inline-flex items-center gap-1.5 text-sm text-primary"
+        >
+          <MessageCircle className="h-4 w-4" />
+          <span>View replies</span>
+          {post.replyCount > 0 && (
+            <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium">
+              {post.replyCount}
+            </span>
+          )}
+        </Link>
+
+        {isAuthor && (
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            disabled={deletePost.isPending}
+            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-red-600 disabled:opacity-50"
+            aria-label="Delete recommendation"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
         )}
-      </Link>
+      </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Delete recommendation"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-muted"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete}
+              disabled={deletePost.isPending}
+              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              Delete
+            </button>
+          </>
+        }
+      >
+        Are you sure you want to delete this recommendation? This action cannot be undone.
+      </Modal>
     </article>
   );
 }
