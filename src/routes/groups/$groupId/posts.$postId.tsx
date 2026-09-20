@@ -1,5 +1,6 @@
+import { useAuth } from '@clerk/react'
 import { useQuery } from '@tanstack/react-query';
-import { Link, createFileRoute, useParams } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate, useParams } from '@tanstack/react-router';
 import { ArrowLeft, Users } from 'lucide-react';
 
 import { getPostFn } from '#/modules/posts/adapters/posts.functions.js';
@@ -14,6 +15,8 @@ export const Route = createFileRoute('/groups/$groupId/posts/$postId')({
 
 function PostDetailPage() {
   const { groupId, postId } = useParams({ from: '/groups/$groupId/posts/$postId' })
+  const { userId } = useAuth()
+  const navigate = useNavigate()
 
   const { data: post } = useQuery({
     queryKey: ['posts', postId],
@@ -51,7 +54,11 @@ function PostDetailPage() {
       </div>
 
       <div className="mt-6">
-        <PostCard post={post} />
+        <PostCard
+          post={post}
+          currentUserId={userId ?? undefined}
+          onDelete={() => navigate({ to: '/groups/$groupId', params: { groupId } })}
+        />
       </div>
 
       <div className="mt-8">

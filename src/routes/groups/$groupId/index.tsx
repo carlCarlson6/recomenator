@@ -1,3 +1,4 @@
+import { useAuth } from '@clerk/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, createFileRoute, useParams } from '@tanstack/react-router'
 import { HandHeart, Home, Plus, Settings } from 'lucide-react'
@@ -25,6 +26,7 @@ const categories: { value: Category; label: string }[] = [
 
 function GroupPage() {
   const { groupId } = useParams({ from: '/groups/$groupId/' })
+  const { userId } = useAuth()
   const queryClient = useQueryClient()
   const [category, setCategory] = useState<Category | undefined>(undefined)
 
@@ -89,7 +91,7 @@ function GroupPage() {
             {posts.length === 0 ? (
               <p className="text-muted-foreground">No recommendations yet.</p>
             ) : (
-              posts.map((post) => <PostCard key={post.id} post={post} />)
+              posts.map((post) => <PostCard key={post.id} post={post} currentUserId={userId ?? undefined} />)
             )}
           </div>
         </div>

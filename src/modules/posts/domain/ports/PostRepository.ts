@@ -7,4 +7,5 @@ export interface PostRepository {
   findByIds(ids: string[]): Promise<Post[]>;
   findByGroupId(groupId: string, options?: { category?: Category }): Promise<Post[]>;
   save(post: Post): Promise<void>;
+  delete(id: string): Promise<void>;
 }

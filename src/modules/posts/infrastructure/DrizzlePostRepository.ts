@@ -61,4 +61,8 @@ export class DrizzlePostRepository implements PostRepository {
         },
       });
   }
+
+  async delete(id: string): Promise<void> {
+    await db.delete(posts).where(eq(posts.id, id));
+  }
 }

@@ -31,6 +31,10 @@ class InMemoryPostRepository implements PostRepository {
     this.posts.set(post.id, post);
   }
 
+  async delete(id: string): Promise<void> {
+    this.posts.delete(id);
+  }
+
   add(post: Post): void {
     this.posts.set(post.id, post);
   }

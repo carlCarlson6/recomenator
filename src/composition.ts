@@ -11,6 +11,7 @@ import { DrizzleGroupRepository } from './modules/groups/infrastructure/DrizzleG
 import { DrizzleInviteRepository } from './modules/groups/infrastructure/DrizzleInviteRepository.js';
 import { DrizzleMembershipRepository } from './modules/groups/infrastructure/DrizzleMembershipRepository.js';
 import { createPost, listTimelinePosts } from './modules/posts/application/CreatePost.js';
+import { deletePost } from './modules/posts/application/DeletePost.js';
 import { listMyInteractions } from './modules/posts/application/ListMyInteractions.js';
 import { getPost } from './modules/posts/application/GetPost.js';
 import {
@@ -75,6 +76,9 @@ export function createUseCases() {
 
     createPost: (input: Parameters<typeof createPost>[0]) =>
       createPost(input, { postRepo, membershipRepo, userRepo, linkPreviewService, draftRepo }),
+
+    deletePost: (input: Parameters<typeof deletePost>[0]) =>
+      deletePost(input, { postRepo }),
 
     saveDraft: (input: Parameters<typeof saveDraft>[0]) =>
       saveDraft(input, { draftRepo, membershipRepo }),

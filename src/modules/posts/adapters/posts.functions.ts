@@ -156,6 +156,19 @@ export const getPostFn = createServerFn({ method: 'GET' })
     );
   });
 
+export const deletePostFn = createServerFn({ method: 'POST' })
+  .middleware([protectedMiddleware])
+  .validator(postIdSchema)
+  .handler(async ({ data, context }) => {
+    const { deletePost } = createUseCases();
+    return unwrapResult(
+      await deletePost({
+        postId: data.postId,
+        userId: context.userId,
+      }),
+    );
+  });
+
 const reactionSchema = z.object({
   postId: z.string().min(1),
   type: reactionTypeSchema,
