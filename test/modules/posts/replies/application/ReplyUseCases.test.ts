@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { addReply, deleteReply, listReplies } from '../../../../src/modules/replies/application/ReplyUseCases.js';
-import { Reply } from '../../../../src/modules/replies/domain/Reply.js';
-import type { ReplyRepository } from '../../../../src/modules/replies/domain/ports/ReplyRepository.js';
-import { Post } from '../../../../src/modules/posts/domain/Post.js';
-import type { PostRepository } from '../../../../src/modules/posts/domain/ports/PostRepository.js';
-import { Membership } from '../../../../src/modules/groups/domain/Membership.js';
-import type { MembershipRepository } from '../../../../src/modules/groups/domain/ports/MembershipRepository.js';
-import type { UserRepository } from '../../../../src/modules/auth/domain/ports/UserRepository.js';
-import { User } from '../../../../src/modules/auth/domain/User.js';
-import type { Category } from '../../../../src/shared/infrastructure/db/schema.js';
+import { addReply, deleteReply, listReplies } from '../../../../../src/modules/posts/replies/application/ReplyUseCases.js';
+import { Reply } from '../../../../../src/modules/posts/replies/domain/Reply.js';
+import type { ReplyRepository } from '../../../../../src/modules/posts/replies/domain/ports/ReplyRepository.js';
+import { Post } from '../../../../../src/modules/posts/domain/Post.js';
+import type { PostRepository } from '../../../../../src/modules/posts/domain/ports/PostRepository.js';
+import { Membership } from '../../../../../src/modules/groups/domain/Membership.js';
+import type { MembershipRepository } from '../../../../../src/modules/groups/domain/ports/MembershipRepository.js';
+import type { UserRepository } from '../../../../../src/modules/auth/domain/ports/UserRepository.js';
+import { User } from '../../../../../src/modules/auth/domain/User.js';
+import type { Category } from '../../../../../src/shared/infrastructure/db/schema.js';
 
 class InMemoryReplyRepository implements ReplyRepository {
   private replies: Map<string, Reply> = new Map();

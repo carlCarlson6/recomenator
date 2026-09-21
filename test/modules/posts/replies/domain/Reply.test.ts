@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { Reply } from '../../../../src/modules/replies/domain/Reply.js';
+import { Reply } from '../../../../../src/modules/posts/replies/domain/Reply.js';
 
 describe('Reply', () => {
   it('creates a top-level reply', () => {

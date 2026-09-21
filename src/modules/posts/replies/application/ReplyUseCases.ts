@@ -4,8 +4,8 @@ import { UnauthorizedError, type DomainError } from '#/shared/kernel/DomainError
 import { NotGroupMemberError } from '#/modules/groups/domain/errors.js';
 import type { MembershipRepository } from '#/modules/groups/domain/ports/MembershipRepository.js';
 import type { UserRepository } from '#/modules/auth/domain/ports/UserRepository.js';
-import type { PostRepository } from '#/modules/posts/domain/ports/PostRepository.js';
-import { PostNotFoundError } from '#/modules/posts/domain/errors.js';
+import type { PostRepository } from '../../domain/ports/PostRepository.js';
+import { PostNotFoundError } from '../../domain/errors.js';
 
 import { Reply } from '../domain/Reply.js';
 import { ReplyNotFoundError, ReplyPostMismatchError, ReplyToDeletedReplyError } from '../domain/errors.js';

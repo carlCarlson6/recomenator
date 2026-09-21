@@ -9,7 +9,7 @@ import type { PostRepository } from '../../../../src/modules/posts/domain/ports/
 import type { PostReactionRepository } from '../../../../src/modules/posts/domain/ports/PostReactionRepository.js';
 import type { MembershipRepository } from '../../../../src/modules/groups/domain/ports/MembershipRepository.js';
 import type { UserRepository } from '../../../../src/modules/auth/domain/ports/UserRepository.js';
-import type { ReplyRepository } from '../../../../src/modules/replies/domain/ports/ReplyRepository.js';
+import type { ReplyRepository } from '../../../../src/modules/posts/replies/domain/ports/ReplyRepository.js';
 import type { Category, ReactionType } from '../../../../src/shared/infrastructure/db/schema.js';
 
 class InMemoryPostRepository implements PostRepository {
