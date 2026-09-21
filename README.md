@@ -35,13 +35,16 @@ The app follows **Domain-Driven Design**, **Hexagonal Architecture**, and **Vert
 ```
 src/
   routes/              # TanStack Start file routes (inbound adapters)
-  modules/             # Vertical slices: auth, groups, posts, replies, linkPreview, notifications
+  modules/             # Vertical slices: auth, groups, posts, notifications
     <slice>/
       domain/          # Aggregates, value objects, repository ports
       application/     # Use cases
       infrastructure/  # Drizzle repositories, external adapters
       adapters/        # Server functions (.functions.ts) + shared schemas (.schemas.ts)
       ui/              # Components for this slice
+    posts/
+      replies/         # Submodule: nested reply threads
+      linkPreview/     # Submodule: external link preview fetching
   shared/              # Kernel (Result, errors, ID generator) + DB client/schema
   env/                 # T3 Env server + client schemas
 ```

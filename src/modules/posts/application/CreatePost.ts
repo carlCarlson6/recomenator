@@ -1,8 +1,8 @@
 import { err, ok, type Result } from '#/shared/kernel/Result.js';
 import type { DomainError } from '#/shared/kernel/DomainError.js';
 
-import { fetchLinkPreview } from '#/modules/linkPreview/application/FetchLinkPreview.js';
-import type { LinkPreviewService } from '#/modules/linkPreview/application/ports/LinkPreviewService.js';
+import { fetchLinkPreview } from '../linkPreview/application/FetchLinkPreview.js';
+import type { LinkPreviewService } from '../linkPreview/application/ports/LinkPreviewService.js';
 import { NotGroupMemberError } from '#/modules/groups/domain/errors.js';
 import { Membership } from '#/modules/groups/domain/Membership.js';
 import type { MembershipRepository } from '#/modules/groups/domain/ports/MembershipRepository.js';
@@ -13,7 +13,7 @@ import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.j
 import { Post } from '../domain/Post.js';
 import type { PostRepository } from '../domain/ports/PostRepository.js';
 import type { PostReactionRepository } from '../domain/ports/PostReactionRepository.js';
-import type { ReplyRepository } from '#/modules/replies/domain/ports/ReplyRepository.js';
+import type { ReplyRepository } from '../replies/domain/ports/ReplyRepository.js';
 import type { DraftRepository } from '../domain/ports/DraftRepository.js';
 
 export type CreatePostInput = {

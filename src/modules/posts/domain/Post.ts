@@ -2,7 +2,7 @@ import { createId } from '#/shared/kernel/idGenerator.js';
 import { err, ok, type Result } from '#/shared/kernel/Result.js';
 import { ValidationError } from '#/shared/kernel/DomainError.js';
 
-import type { LinkPreview } from '#/modules/linkPreview/domain/LinkPreview.js';
+import type { LinkPreview } from '../linkPreview/domain/LinkPreview.js';
 import type { Category } from '#/shared/infrastructure/db/schema.js';
 
 export class Post {

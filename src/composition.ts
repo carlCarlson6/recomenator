@@ -26,9 +26,9 @@ import {
 import { DrizzlePostRepository } from './modules/posts/infrastructure/DrizzlePostRepository.js';
 import { DrizzlePostReactionRepository } from './modules/posts/infrastructure/DrizzlePostReactionRepository.js';
 import { DrizzleDraftRepository } from './modules/posts/infrastructure/DrizzleDraftRepository.js';
-import { OpenGraphLinkPreviewService } from './modules/linkPreview/infrastructure/OpenGraphLinkPreviewService.js';
-import { addReply, deleteReply, listReplies } from './modules/replies/application/ReplyUseCases.js';
-import { DrizzleReplyRepository } from './modules/replies/infrastructure/DrizzleReplyRepository.js';
+import { OpenGraphLinkPreviewService } from './modules/posts/linkPreview/infrastructure/OpenGraphLinkPreviewService.js';
+import { addReply, deleteReply, listReplies } from './modules/posts/replies/application/ReplyUseCases.js';
+import { DrizzleReplyRepository } from './modules/posts/replies/infrastructure/DrizzleReplyRepository.js';
 import {
   getUnreadGroups,
   markGroupAsRead,

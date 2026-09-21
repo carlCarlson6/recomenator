@@ -7,7 +7,7 @@ import type { MembershipRepository } from '#/modules/groups/domain/ports/Members
 import { User } from '#/modules/auth/domain/User.js';
 import type { UserRepository } from '#/modules/auth/domain/ports/UserRepository.js';
 import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js';
-import type { ReplyRepository } from '#/modules/replies/domain/ports/ReplyRepository.js';
+import type { ReplyRepository } from '../replies/domain/ports/ReplyRepository.js';
 
 import type { PostRepository } from '../domain/ports/PostRepository.js';
 import type { PostReactionRepository } from '../domain/ports/PostReactionRepository.js';

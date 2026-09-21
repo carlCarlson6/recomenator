@@ -9,7 +9,7 @@ import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
 import { Post } from '../domain/Post.js';
 import type { PostRepository } from '../domain/ports/PostRepository.js';
 import type { PostReactionRepository } from '../domain/ports/PostReactionRepository.js';
-import type { ReplyRepository } from '#/modules/replies/domain/ports/ReplyRepository.js';
+import type { ReplyRepository } from '../replies/domain/ports/ReplyRepository.js';
 import type { PostDto } from './CreatePost.js';
 
 class PostNotFoundError extends DomainError {

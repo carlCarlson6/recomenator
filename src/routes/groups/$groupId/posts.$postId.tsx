@@ -5,9 +5,9 @@ import { ArrowLeft, Users } from 'lucide-react';
 
 import { getPostFn } from '#/modules/posts/adapters/posts.functions.js';
 import { PostCard } from '#/modules/posts/ui/PostCard.js';
-import { listRepliesFn } from '#/modules/replies/adapters/replies.functions.js';
-import { ReplyForm } from '#/modules/replies/ui/ReplyForm.js';
-import { ReplyList } from '#/modules/replies/ui/ReplyList.js';
+import { listRepliesFn } from '#/modules/posts/replies/adapters/replies.functions.js';
+import { ReplyForm } from '#/modules/posts/replies/ui/ReplyForm.js';
+import { ReplyList } from '#/modules/posts/replies/ui/ReplyList.js';
 
 export const Route = createFileRoute('/groups/$groupId/posts/$postId')({
   component: PostDetailPage,
