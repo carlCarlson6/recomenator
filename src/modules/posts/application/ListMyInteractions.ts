@@ -6,6 +6,10 @@ import { Membership } from '#/modules/groups/domain/Membership.js';
 import type { MembershipRepository } from '#/modules/groups/domain/ports/MembershipRepository.js';
 import { User } from '#/modules/auth/domain/User.js';
 import type { UserRepository } from '#/modules/auth/domain/ports/UserRepository.js';
+import {
+  resyncUsers,
+  type ResyncUserFromClerk,
+} from '#/modules/auth/application/ResyncUserFromClerk.js';
 import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js';
 import type { ReplyRepository } from '../replies/domain/ports/ReplyRepository.js';
 
@@ -44,6 +48,7 @@ export async function listMyInteractions(
     userRepo: UserRepository;
     postReactionRepo: PostReactionRepository;
     replyRepo: ReplyRepository;
+    resyncUserFromClerk: ResyncUserFromClerk;
   },
 ): Promise<Result<PostDto[], DomainError>> {
   const membership = await deps.membershipRepo.findByUserAndGroup(input.userId, input.groupId);
@@ -69,10 +74,11 @@ export async function listMyInteractions(
 
   const authorIds = [...new Set(posts.map((p) => p.authorId))];
   const users = authorIds.length > 0 ? await deps.userRepo.findByIds(authorIds) : [];
+  const resyncedUsers = await resyncUsers(users, deps.resyncUserFromClerk);
 
   const postMap = new Map(posts.map((p) => [p.id, p]));
   const membershipMap = new Map(groupMemberships.map((m) => [`${m.userId}:${m.groupId}`, m]));
-  const userMap = new Map(users.map((u) => [u.id, u]));
+  const userMap = new Map(resyncedUsers.map((u) => [u.id, u]));
 
   const countsMap = new Map<string, Map<ReactionType, number>>();
   for (const { postId, type, count } of counts) {

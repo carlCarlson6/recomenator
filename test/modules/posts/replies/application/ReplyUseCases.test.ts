@@ -9,6 +9,7 @@ import { Membership } from '../../../../../src/modules/groups/domain/Membership.
 import type { MembershipRepository } from '../../../../../src/modules/groups/domain/ports/MembershipRepository.js';
 import type { UserRepository } from '../../../../../src/modules/auth/domain/ports/UserRepository.js';
 import { User } from '../../../../../src/modules/auth/domain/User.js';
+import type { ResyncUserFromClerk } from '../../../../../src/modules/auth/application/ResyncUserFromClerk.js';
 import type { Category } from '../../../../../src/shared/infrastructure/db/schema.js';
 
 class InMemoryReplyRepository implements ReplyRepository {
@@ -119,7 +120,8 @@ function createDeps() {
   const postRepo = new InMemoryPostRepository();
   const membershipRepo = new InMemoryMembershipRepository();
   const userRepo = new InMemoryUserRepository();
-  return { replyRepo, postRepo, membershipRepo, userRepo };
+  const resyncUserFromClerk: ResyncUserFromClerk = async () => null;
+  return { replyRepo, postRepo, membershipRepo, userRepo, resyncUserFromClerk };
 }
 
 function createPost(overrides?: { groupId?: string; authorId?: string }) {

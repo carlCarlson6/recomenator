@@ -7,7 +7,9 @@ import { listPostReactors } from '../../../../src/modules/posts/application/List
 import type { MembershipRepository } from '../../../../src/modules/groups/domain/ports/MembershipRepository.js';
 import type { PostRepository } from '../../../../src/modules/posts/domain/ports/PostRepository.js';
 import type { PostReactionRepository } from '../../../../src/modules/posts/domain/ports/PostReactionRepository.js';
-import type { UserReadModel } from '../../../../src/shared/read-models/UserReadModel.js';
+import type { UserRepository } from '../../../../src/modules/auth/domain/ports/UserRepository.js';
+import { User } from '../../../../src/modules/auth/domain/User.js';
+import type { ResyncUserFromClerk } from '../../../../src/modules/auth/application/ResyncUserFromClerk.js';
 import type { Category, ReactionType } from '../../../../src/shared/infrastructure/db/schema.js';
 
 class InMemoryPostRepository implements PostRepository {
@@ -128,30 +130,34 @@ class InMemoryPostReactionRepository implements PostReactionRepository {
   }
 }
 
-class InMemoryUserReadModel implements UserReadModel {
-  private users: Map<string, { username?: string | null; email: string }> = new Map();
+class InMemoryUserRepository implements UserRepository {
+  private users: Map<string, User> = new Map();
 
-  set(userId: string, data: { username?: string | null; email: string }): void {
-    this.users.set(userId, data);
+  async findById(id: string): Promise<User | null> {
+    return this.users.get(id) ?? null;
   }
 
-  async findDisplayNamesByIds(userIds: string[]): Promise<Map<string, string>> {
-    const result = new Map<string, string>();
-    for (const userId of userIds) {
-      const user = this.users.get(userId);
-      const displayName = user?.username?.trim() || user?.email || 'Anonymous';
-      result.set(userId, displayName);
-    }
-    return result;
+  async findByIds(ids: string[]): Promise<User[]> {
+    return ids.map((id) => this.users.get(id)).filter((u): u is User => u !== undefined);
+  }
+
+  async save(user: User): Promise<void> {
+    this.users.set(user.id, user);
+  }
+
+  add(user: User): void {
+    this.users.set(user.id, user);
   }
 }
 
 function createDeps() {
+  const userRepo = new InMemoryUserRepository();
   return {
     postRepo: new InMemoryPostRepository(),
     membershipRepo: new InMemoryMembershipRepository(),
     postReactionRepo: new InMemoryPostReactionRepository(),
-    userReadModel: new InMemoryUserReadModel(),
+    userRepo,
+    resyncUserFromClerk: (async () => null) as unknown as ResyncUserFromClerk,
   };
 }
 
@@ -169,8 +175,8 @@ describe('ListPostReactors', () => {
     if (!post.ok) return;
     deps.postRepo.add(post.value);
 
-    deps.userReadModel.set('usr_2', { username: 'Bob', email: 'bob@example.com' });
-    deps.userReadModel.set('usr_3', { username: 'Charlie', email: 'charlie@example.com' });
+    deps.userRepo.add(User.create({ id: 'usr_2', email: 'bob@example.com', username: 'Bob' }));
+    deps.userRepo.add(User.create({ id: 'usr_3', email: 'charlie@example.com', username: 'Charlie' }));
 
     const reaction1 = PostReaction.reconstitute({
       id: 'rct_1',
@@ -228,7 +234,7 @@ describe('ListPostReactors', () => {
     expect(result.value.reactors).toEqual([]);
   });
 
-  it('falls back to email and then Anonymous', async () => {
+  it('falls back to email and then Unknown', async () => {
     const deps = createDeps();
 
     const membership = Membership.create({ userId: 'usr_1', groupId: 'grp_1', displayName: 'Alice' });
@@ -241,8 +247,8 @@ describe('ListPostReactors', () => {
     if (!post.ok) return;
     deps.postRepo.add(post.value);
 
-    deps.userReadModel.set('usr_2', { email: 'bob@example.com' });
-    deps.userReadModel.set('usr_3', { email: '', username: null });
+    deps.userRepo.add(User.create({ id: 'usr_2', email: 'bob@example.com' }));
+    deps.userRepo.add(User.create({ id: 'usr_3', email: '' }));
 
     const reaction1 = PostReaction.create({ postId: post.value.id, userId: 'usr_2', type: 'liked' });
     const reaction2 = PostReaction.create({ postId: post.value.id, userId: 'usr_3', type: 'liked' });
@@ -261,7 +267,49 @@ describe('ListPostReactors', () => {
 
     const names = result.value.reactors.map((r) => r.displayName);
     expect(names).toContain('bob@example.com');
-    expect(names).toContain('Anonymous');
+    expect(names).toContain('Unknown');
+  });
+
+  it('resyncs missing usernames from Clerk', async () => {
+    const deps = createDeps();
+
+    const membership = Membership.create({ userId: 'usr_1', groupId: 'grp_1', displayName: 'Alice' });
+    expect(membership.ok).toBe(true);
+    if (!membership.ok) return;
+    deps.membershipRepo.add(membership.value);
+
+    const post = Post.create({ groupId: 'grp_1', authorId: 'usr_2', category: 'MOVIES', title: 'Inception' });
+    expect(post.ok).toBe(true);
+    if (!post.ok) return;
+    deps.postRepo.add(post.value);
+
+    deps.userRepo.add(User.create({ id: 'usr_2', email: 'bob@example.com' }));
+
+    const reaction = PostReaction.create({ postId: post.value.id, userId: 'usr_2', type: 'liked' });
+    expect(reaction.ok).toBe(true);
+    if (!reaction.ok) return;
+    deps.postReactionRepo.add(reaction.value);
+
+    deps.resyncUserFromClerk = async ({ userId }) =>
+      User.reconstitute({
+        id: userId,
+        email: 'bob@example.com',
+        username: 'ResyncedBob',
+        avatarUrl: null,
+        createdAt: new Date(),
+      });
+
+    const result = await listPostReactors(
+      { postId: post.value.id, userId: 'usr_1', type: 'liked' },
+      deps,
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value.reactors).toEqual([
+      { userId: 'usr_2', displayName: 'ResyncedBob', reactedAt: reaction.value.createdAt },
+    ]);
   });
 
   it('returns PostNotFoundError when the post does not exist', async () => {
