@@ -11,6 +11,7 @@ export interface PostReactionRepository {
     categories?: Category[];
     types?: ReactionType[];
   }): Promise<Array<{ postId: string; type: ReactionType; createdAt: Date }>>;
+  findByPostIdAndType(postId: string, type: ReactionType): Promise<Array<{ userId: string; createdAt: Date }>>;
   save(reaction: PostReaction): Promise<void>;
   delete(postId: string, userId: string, type: ReactionType): Promise<void>;
 }

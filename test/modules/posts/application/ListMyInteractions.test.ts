@@ -89,6 +89,13 @@ class InMemoryPostReactionRepository implements PostReactionRepository {
     return result.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
+  async findByPostIdAndType(postId: string, type: ReactionType): Promise<Array<{ userId: string; createdAt: Date }>> {
+    return this.reactions
+      .filter((r) => r.postId === postId && r.type === type)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .map((r) => ({ userId: r.userId, createdAt: r.createdAt }));
+  }
+
   async save(reaction: PostReaction): Promise<void> {
     this.reactions.push(reaction);
   }

@@ -1,4 +1,5 @@
 import { syncClerkUser } from './modules/auth/application/SyncClerkUser.js';
+import { DrizzleUserReadModel } from './modules/auth/infrastructure/DrizzleUserReadModel.js';
 import { DrizzleUserRepository } from './modules/auth/infrastructure/DrizzleUserRepository.js';
 import { createGroup } from './modules/groups/application/CreateGroup.js';
 import { generateInvite } from './modules/groups/application/GenerateInvite.js';
@@ -14,6 +15,7 @@ import { createPost, listTimelinePosts } from './modules/posts/application/Creat
 import { deletePost } from './modules/posts/application/DeletePost.js';
 import { listMyInteractions } from './modules/posts/application/ListMyInteractions.js';
 import { getPost } from './modules/posts/application/GetPost.js';
+import { listPostReactors } from './modules/posts/application/ListPostReactors.js';
 import {
   addPostReaction,
   removePostReaction,
@@ -36,6 +38,7 @@ import {
 import { DrizzleNotificationRepository } from './modules/notifications/infrastructure/DrizzleNotificationRepository.js';
 
 const userRepo = new DrizzleUserRepository();
+const userReadModel = new DrizzleUserReadModel();
 const groupRepo = new DrizzleGroupRepository();
 const inviteRepo = new DrizzleInviteRepository();
 const membershipRepo = new DrizzleMembershipRepository();
@@ -103,6 +106,9 @@ export function createUseCases() {
 
     removePostReaction: (input: Parameters<typeof removePostReaction>[0]) =>
       removePostReaction(input, { postRepo, membershipRepo, postReactionRepo }),
+
+    listPostReactors: (input: Parameters<typeof listPostReactors>[0]) =>
+      listPostReactors(input, { postRepo, membershipRepo, postReactionRepo, userReadModel }),
 
     addReply: (input: Parameters<typeof addReply>[0]) =>
       addReply(input, { replyRepo, postRepo, membershipRepo, userRepo }),

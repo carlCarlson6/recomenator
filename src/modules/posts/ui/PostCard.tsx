@@ -7,6 +7,7 @@ import { Modal } from '#/shared/ui/Modal.js';
 import type { PostDto } from '../application/CreatePost.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
 import { addPostReactionFn, deletePostFn, removePostReactionFn } from '../adapters/posts.functions.js';
+import { ReactionButton } from './ReactionButton.js';
 
 const REACTION_CONFIG: Array<{
   type: ReactionType;
@@ -35,19 +36,21 @@ export function PostCard({
 
   const addReaction = useMutation({
     mutationFn: addPostReactionFn,
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['groups', post.groupId, 'timeline'] });
       queryClient.invalidateQueries({ queryKey: ['groups', post.groupId, 'interactions'] });
       queryClient.invalidateQueries({ queryKey: ['posts', post.id] });
+      queryClient.invalidateQueries({ queryKey: ['posts', post.id, 'reactors', variables.data.type] });
     },
   });
 
   const removeReaction = useMutation({
     mutationFn: removePostReactionFn,
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['groups', post.groupId, 'timeline'] });
       queryClient.invalidateQueries({ queryKey: ['groups', post.groupId, 'interactions'] });
       queryClient.invalidateQueries({ queryKey: ['posts', post.id] });
+      queryClient.invalidateQueries({ queryKey: ['posts', post.id, 'reactors', variables.data.type] });
     },
   });
 
@@ -120,28 +123,22 @@ export function PostCard({
       )}
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {REACTION_CONFIG.map(({ type, label, icon: Icon }) => {
+        {REACTION_CONFIG.map(({ type, label, icon }) => {
           const isActive = post.myReactions.includes(type);
           const count = post.reactions.find((r) => r.type === type)?.count ?? 0;
 
           return (
-            <button
+            <ReactionButton
               key={type}
-              type="button"
-              onClick={() => toggleReaction(type)}
+              postId={post.id}
+              type={type}
+              label={label}
+              icon={icon}
+              count={count}
+              isActive={isActive}
               disabled={addReaction.isPending || removeReaction.isPending}
-              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors ${
-                isActive
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-card text-muted-foreground hover:border-primary hover:text-foreground'
-              }`}
-              aria-pressed={isActive}
-              aria-label={`${label} (${count})`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              <span>{label}</span>
-              <span className="font-medium">{count}</span>
-            </button>
+              onClick={() => toggleReaction(type)}
+            />
           );
         })}
       </div>

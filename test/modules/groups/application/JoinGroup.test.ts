@@ -134,6 +134,26 @@ describe('JoinGroup', () => {
     expect(result.value.displayName).toBe('Alice');
   });
 
+  it('rejects an empty display name', async () => {
+    const deps = createDeps();
+    const group = Group.create({ name: 'Movie Buffs', createdById: 'usr_1' });
+    expect(group.ok).toBe(true);
+    if (!group.ok) return;
+
+    const invite = Invite.create({ groupId: group.value.id, createdById: 'usr_1' });
+    deps.inviteRepo.add(invite);
+    deps.groupRepo.add(group.value);
+
+    const result = await joinGroupWithInvite(
+      { code: invite.code, userId: 'usr_2', displayName: '' },
+      deps,
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe('VALIDATION_ERROR');
+  });
+
   it('returns ExpiredInviteError for an expired invite', async () => {
     const deps = createDeps();
     const group = Group.create({ name: 'Movie Buffs', createdById: 'usr_1' });

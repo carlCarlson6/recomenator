@@ -78,6 +78,22 @@ export class DrizzlePostReactionRepository implements PostReactionRepository {
     }));
   }
 
+  async findByPostIdAndType(postId: string, type: ReactionType): Promise<Array<{ userId: string; createdAt: Date }>> {
+    const rows = await db
+      .select({
+        userId: postReactions.userId,
+        createdAt: postReactions.createdAt,
+      })
+      .from(postReactions)
+      .where(and(eq(postReactions.postId, postId), eq(postReactions.type, type)))
+      .orderBy(sql`${postReactions.createdAt} desc`);
+
+    return rows.map((row) => ({
+      userId: row.userId,
+      createdAt: row.createdAt,
+    }));
+  }
+
   async save(reaction: PostReaction): Promise<void> {
     await db
       .insert(postReactions)
