@@ -5,9 +5,9 @@ import type { ClerkUserProvider } from '../application/ports/ClerkUserProvider.j
 export class TanstackClerkUserProvider implements ClerkUserProvider {
   async getUsername(userId: string): Promise<string | null> {
     try {
-      const client = await clerkClient();
+      const client = clerkClient();
       const clerkUser = await client.users.getUser(userId);
-      return clerkUser.username ?? null;
+      return clerkUser.firstName ?? null;
     } catch {
       return null;
     }
