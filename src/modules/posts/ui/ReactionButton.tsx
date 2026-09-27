@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Tooltip } from '#/shared/ui/Tooltip.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
 import { listPostReactorsFn } from '../adapters/posts.functions.js';
+import { ReactorsModal } from './ReactorsModal.js';
 
 export function ReactionButton({
   postId,
@@ -26,6 +27,7 @@ export function ReactionButton({
   onClick: () => void;
 }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data, isPending } = useQuery({
     queryKey: ['posts', postId, 'reactors', type],
@@ -55,26 +57,49 @@ export function ReactionButton({
     );
   })();
 
+  const baseButtonClasses = `px-2.5 py-1 text-xs transition-colors inline-flex items-center gap-1 ${
+    isActive
+      ? 'border-primary bg-primary text-primary-foreground'
+      : 'border-border bg-card text-muted-foreground hover:border-primary hover:text-foreground'
+  }`;
+
   return (
-    <Tooltip content={tooltipContent} enabled={count > 0}>
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors ${
-          isActive
-            ? 'border-primary bg-primary text-primary-foreground'
-            : 'border-border bg-card text-muted-foreground hover:border-primary hover:text-foreground'
-        }`}
-        aria-pressed={isActive}
-        aria-label={`${label} (${count})`}
-      >
-        <Icon className="h-3.5 w-3.5" />
-        <span>{label}</span>
-        <span className="font-medium">{count}</span>
-      </button>
-    </Tooltip>
+    <>
+      <Tooltip content={tooltipContent} enabled={count > 0}>
+        <span
+          className="inline-flex rounded-full border border-border overflow-hidden"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <button
+            type="button"
+            onClick={onClick}
+            disabled={disabled}
+            className={`${baseButtonClasses} rounded-l-full border-r`}
+            aria-pressed={isActive}
+            aria-label={label}
+          >
+            <Icon className="h-3.5 w-3.5" />
+            <span>{label}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            disabled={count === 0}
+            className={`${baseButtonClasses} rounded-r-full min-w-[2rem] justify-center`}
+            aria-label={`${count} people ${label.toLowerCase()} this`}
+          >
+            <span className="font-medium">{count}</span>
+          </button>
+        </span>
+      </Tooltip>
+
+      <ReactorsModal
+        postId={postId}
+        type={type}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+    </>
   );
 }
