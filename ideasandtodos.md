@@ -2,3 +2,4 @@
 - update profile image
 - when click on home redirct to current group
 - review initial app flow, redirect to group, make group default
+- introduce effect-ts ??
