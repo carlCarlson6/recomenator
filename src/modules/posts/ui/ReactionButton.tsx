@@ -27,7 +27,7 @@ export function ReactionButton({
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isPending } = useQuery({
     queryKey: ['posts', postId, 'reactors', type],
     queryFn: () => listPostReactorsFn({ data: { postId, type } }),
     enabled: isHovered && count > 0,
@@ -36,7 +36,14 @@ export function ReactionButton({
 
   const tooltipContent = (() => {
     if (count === 0) return null;
-    if (isLoading) return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
+    if (isPending) {
+      return (
+        <span className="flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Loading...</span>
+        </span>
+      );
+    }
     if (!data || data.reactors.length === 0) return null;
 
     return (
