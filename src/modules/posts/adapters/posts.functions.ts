@@ -201,3 +201,17 @@ export const removePostReactionFn = createServerFn({ method: 'POST' })
       }),
     );
   });
+
+export const listPostReactorsFn = createServerFn({ method: 'GET' })
+  .middleware([protectedMiddleware])
+  .validator(reactionSchema)
+  .handler(async ({ data, context }) => {
+    const { listPostReactors } = createUseCases();
+    return unwrapResult(
+      await listPostReactors({
+        postId: data.postId,
+        userId: context.userId,
+        type: data.type as ReactionType,
+      }),
+    );
+  });
