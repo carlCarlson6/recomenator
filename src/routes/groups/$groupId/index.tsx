@@ -98,8 +98,12 @@ function GroupPage() {
       </main>
 
       <BottomBar>
-        <Link to="/" className="flex-1">
-          <BottomBarItem>
+        <Link
+          to="/groups/$groupId"
+          params={{ groupId }}
+          className="flex-1"
+        >
+          <BottomBarItem active>
             <Home className="h-5 w-5" />
             <span>Home</span>
           </BottomBarItem>

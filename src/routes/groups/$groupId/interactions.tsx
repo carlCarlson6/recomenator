@@ -130,7 +130,11 @@ function InteractionsPage() {
       </main>
 
       <BottomBar>
-        <Link to="/" className="flex-1">
+        <Link
+          to="/groups/$groupId"
+          params={{ groupId }}
+          className="flex-1"
+        >
           <BottomBarItem>
             <Home className="h-5 w-5" />
             <span>Home</span>
