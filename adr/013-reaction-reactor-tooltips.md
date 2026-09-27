@@ -53,7 +53,7 @@ This required decisions about:
 - Added an explicit unit test proving empty/whitespace display names are rejected, so this behavior is regression-protected.
 - Per-group display names continue to be used for **authors** of posts and replies, but reactor tooltips intentionally use the read-model fallback chain above to keep the read model generic and simple.
 
-### 6. Tooltip UX
+### 6. Desktop tooltip UX
 
 - Implemented a lightweight `Tooltip` component (`src/shared/ui/Tooltip.tsx`) without adding a third-party library.
 - Reaction counts of zero produce no tooltip.
@@ -61,6 +61,16 @@ This required decisions about:
 - The button remains clickable for toggling the reaction.
 - Cache invalidation targets the per-type reactor query when reactions are added or removed.
 - No real-time updates: data is fresh on the next hover after a mutation invalidates the cache.
+
+### 7. Mobile reactor sheet
+
+- Mobile has no hover, so the reaction pill was split into two adjacent tap targets:
+  - Left side (icon + label) toggles the reaction.
+  - Right side (count) opens a bottom sheet listing reactors.
+- Counts of zero are not interactive on the right side.
+- A new `BottomSheet` component (`src/shared/ui/BottomSheet.tsx`) slides up from the bottom of the viewport.
+- A `ReactorsModal` component (`src/modules/posts/ui/ReactorsModal.tsx`) fetches reactors and renders them inside the sheet with a per-type title ("Liked by", "Interested by", etc.).
+- The same `listPostReactorsFn` query key is used, so cache from desktop hover is reused on mobile.
 
 ## Consequences
 
@@ -91,9 +101,18 @@ After implementation, verify manually:
 12. Submit whitespace-only display name -> rejected by server/domain validation.
 13. Join with valid display name -> succeeds.
 
+### Mobile reactor sheet
+16. Tap the count on a reaction with count `0` -> nothing happens.
+17. Tap the count on a reaction with count `>0` -> bottom sheet opens with reactor list.
+18. Sheet title matches reaction type ("Liked by", "Interested by", etc.).
+19. While sheet data loads -> spinner shown.
+20. Sheet lists all reactor names, newest first.
+21. Tap backdrop or press Escape -> sheet closes.
+22. Short tap on the icon/label side still toggles the reaction.
+
 ### General
-14. No console errors after hovering multiple reactions.
-15. On touch devices, reaction buttons still toggle and tooltip does not break the UI.
+23. No console errors after hovering or tapping multiple reactions.
+24. Cache is shared: hover on desktop preloads data so opening the sheet on mobile is instant.
 
 ## References
 
@@ -104,8 +123,10 @@ After implementation, verify manually:
 - `src/modules/posts/infrastructure/DrizzlePostReactionRepository.ts`
 - `src/modules/posts/adapters/posts.functions.ts`
 - `src/modules/posts/ui/ReactionButton.tsx`
+- `src/modules/posts/ui/ReactorsModal.tsx`
 - `src/modules/posts/ui/PostCard.tsx`
 - `src/shared/ui/Tooltip.tsx`
+- `src/shared/ui/BottomSheet.tsx`
 - `src/composition.ts`
 - `test/modules/posts/application/ListPostReactors.test.ts`
 - `test/modules/groups/application/JoinGroup.test.ts`
