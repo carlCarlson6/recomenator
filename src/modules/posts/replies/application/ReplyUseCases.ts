@@ -4,6 +4,11 @@ import { UnauthorizedError, type DomainError } from '#/shared/kernel/DomainError
 import { NotGroupMemberError } from '#/modules/groups/domain/errors.js';
 import type { MembershipRepository } from '#/modules/groups/domain/ports/MembershipRepository.js';
 import type { UserRepository } from '#/modules/auth/domain/ports/UserRepository.js';
+import {
+  resyncUser,
+  resyncUsers,
+  type ResyncUserFromClerk,
+} from '#/modules/auth/application/ResyncUserFromClerk.js';
 import type { PostRepository } from '../../domain/ports/PostRepository.js';
 import { PostNotFoundError } from '../../domain/errors.js';
 
@@ -47,6 +52,7 @@ export async function addReply(
     postRepo: PostRepository;
     membershipRepo: MembershipRepository;
     userRepo: UserRepository;
+    resyncUserFromClerk: ResyncUserFromClerk;
   },
 ): Promise<Result<ReplyDto, DomainError>> {
   const post = await deps.postRepo.findById(input.postId);
@@ -73,8 +79,9 @@ export async function addReply(
   await deps.replyRepo.save(replyResult.value);
 
   const [author] = await deps.userRepo.findByIds([input.authorId]);
+  const resyncedAuthor = await resyncUser(author, deps.resyncUserFromClerk);
   const authorDisplayName =
-    membership.displayName || author?.username || author?.email || 'Unknown';
+    membership.displayName || resyncedAuthor?.username || resyncedAuthor?.email || 'Unknown';
 
   return ok(toDto(replyResult.value, authorDisplayName));
 }
@@ -86,6 +93,7 @@ export async function listReplies(
     postRepo: PostRepository;
     membershipRepo: MembershipRepository;
     userRepo: UserRepository;
+    resyncUserFromClerk: ResyncUserFromClerk;
   },
 ): Promise<Result<ReplyNodeDto[], DomainError>> {
   const post = await deps.postRepo.findById(input.postId);
@@ -102,8 +110,10 @@ export async function listReplies(
     deps.userRepo.findByIds(replies.map((r) => r.authorId)),
   ]);
 
+  const resyncedUsers = await resyncUsers(users, deps.resyncUserFromClerk);
+
   const membershipMap = new Map(memberships.map((m) => [`${m.userId}:${m.groupId}`, m]));
-  const userMap = new Map(users.map((u) => [u.id, u]));
+  const userMap = new Map(resyncedUsers.map((u) => [u.id, u]));
 
   const dtoMap = new Map<string, ReplyNodeDto>();
 

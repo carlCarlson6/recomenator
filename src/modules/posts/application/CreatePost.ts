@@ -8,6 +8,11 @@ import { Membership } from '#/modules/groups/domain/Membership.js';
 import type { MembershipRepository } from '#/modules/groups/domain/ports/MembershipRepository.js';
 import { User } from '#/modules/auth/domain/User.js';
 import type { UserRepository } from '#/modules/auth/domain/ports/UserRepository.js';
+import {
+  resyncUser,
+  resyncUsers,
+  type ResyncUserFromClerk,
+} from '#/modules/auth/application/ResyncUserFromClerk.js';
 import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js';
 
 import { Post } from '../domain/Post.js';
@@ -95,6 +100,7 @@ export async function createPost(
     userRepo: UserRepository;
     linkPreviewService: LinkPreviewService;
     draftRepo: DraftRepository;
+    resyncUserFromClerk: ResyncUserFromClerk;
   },
 ): Promise<Result<PostDto, DomainError>> {
   const membership = await deps.membershipRepo.findByUserAndGroup(input.authorId, input.groupId);
@@ -119,8 +125,9 @@ export async function createPost(
   }
 
   const [author] = await deps.userRepo.findByIds([post.authorId]);
+  const resyncedAuthor = await resyncUser(author, deps.resyncUserFromClerk);
   const authorDisplayName =
-    membership.displayName || author?.username || author?.email || 'Unknown';
+    membership.displayName || resyncedAuthor?.username || resyncedAuthor?.email || 'Unknown';
 
   return ok(toDto(post, authorDisplayName, [], [], 0));
 }
@@ -133,6 +140,7 @@ export async function listTimelinePosts(
     userRepo: UserRepository;
     postReactionRepo: PostReactionRepository;
     replyRepo: ReplyRepository;
+    resyncUserFromClerk: ResyncUserFromClerk;
   },
 ): Promise<Result<PostDto[], DomainError>> {
   const membership = await deps.membershipRepo.findByUserAndGroup(input.userId, input.groupId);
@@ -150,8 +158,10 @@ export async function listTimelinePosts(
     deps.replyRepo.countByPostIds(postIds),
   ]);
 
+  const resyncedUsers = await resyncUsers(users, deps.resyncUserFromClerk);
+
   const membershipMap = new Map(groupMemberships.map((m) => [`${m.userId}:${m.groupId}`, m]));
-  const userMap = new Map(users.map((u) => [u.id, u]));
+  const userMap = new Map(resyncedUsers.map((u) => [u.id, u]));
   const countsMap = new Map<string, Map<ReactionType, number>>();
 
   for (const { postId, type, count } of counts) {

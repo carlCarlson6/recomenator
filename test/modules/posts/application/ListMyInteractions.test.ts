@@ -9,6 +9,7 @@ import type { PostRepository } from '../../../../src/modules/posts/domain/ports/
 import type { PostReactionRepository } from '../../../../src/modules/posts/domain/ports/PostReactionRepository.js';
 import type { MembershipRepository } from '../../../../src/modules/groups/domain/ports/MembershipRepository.js';
 import type { UserRepository } from '../../../../src/modules/auth/domain/ports/UserRepository.js';
+import type { ResyncUserFromClerk } from '../../../../src/modules/auth/application/ResyncUserFromClerk.js';
 import type { ReplyRepository } from '../../../../src/modules/posts/replies/domain/ports/ReplyRepository.js';
 import type { Category, ReactionType } from '../../../../src/shared/infrastructure/db/schema.js';
 
@@ -177,12 +178,14 @@ class InMemoryReplyRepository implements ReplyRepository {
 }
 
 function createDeps() {
+  const resyncUserFromClerk: ResyncUserFromClerk = async () => null;
   return {
     postRepo: new InMemoryPostRepository(),
     membershipRepo: new InMemoryMembershipRepository(),
     userRepo: new InMemoryUserRepository(),
     postReactionRepo: new InMemoryPostReactionRepository(),
     replyRepo: new InMemoryReplyRepository(),
+    resyncUserFromClerk,
   };
 }
 

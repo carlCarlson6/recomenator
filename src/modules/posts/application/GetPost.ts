@@ -4,6 +4,10 @@ import { DomainError } from '#/shared/kernel/DomainError.js';
 import { NotGroupMemberError } from '#/modules/groups/domain/errors.js';
 import type { MembershipRepository } from '#/modules/groups/domain/ports/MembershipRepository.js';
 import type { UserRepository } from '#/modules/auth/domain/ports/UserRepository.js';
+import {
+  resyncUser,
+  type ResyncUserFromClerk,
+} from '#/modules/auth/application/ResyncUserFromClerk.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
 
 import { Post } from '../domain/Post.js';
@@ -53,6 +57,7 @@ export async function getPost(
     userRepo: UserRepository;
     postReactionRepo: PostReactionRepository;
     replyRepo: ReplyRepository;
+    resyncUserFromClerk: ResyncUserFromClerk;
   },
 ): Promise<Result<PostDto, DomainError>> {
   const post = await deps.postRepo.findById(input.postId);
@@ -69,8 +74,9 @@ export async function getPost(
     deps.replyRepo.countByPostIds([post.id]),
   ]);
 
+  const resyncedAuthor = await resyncUser(author, deps.resyncUserFromClerk);
   const authorDisplayName =
-    authorMembership?.displayName || author?.username || author?.email || 'Unknown';
+    authorMembership?.displayName || resyncedAuthor?.username || resyncedAuthor?.email || 'Unknown';
 
   const countsMap = new Map<ReactionType, number>();
   for (const { type, count } of counts) {

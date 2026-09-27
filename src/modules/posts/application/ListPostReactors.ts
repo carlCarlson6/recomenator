@@ -3,7 +3,11 @@ import { DomainError } from '#/shared/kernel/DomainError.js';
 
 import { NotGroupMemberError } from '#/modules/groups/domain/errors.js';
 import type { MembershipRepository } from '#/modules/groups/domain/ports/MembershipRepository.js';
-import type { UserReadModel } from '#/shared/read-models/UserReadModel.js';
+import type { UserRepository } from '#/modules/auth/domain/ports/UserRepository.js';
+import {
+  resyncUsers,
+  type ResyncUserFromClerk,
+} from '#/modules/auth/application/ResyncUserFromClerk.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
 
 import type { PostRepository } from '../domain/ports/PostRepository.js';
@@ -32,7 +36,8 @@ export async function listPostReactors(
     postRepo: PostRepository;
     membershipRepo: MembershipRepository;
     postReactionRepo: PostReactionRepository;
-    userReadModel: UserReadModel;
+    userRepo: UserRepository;
+    resyncUserFromClerk: ResyncUserFromClerk;
   },
 ): Promise<Result<ListPostReactorsOutput, DomainError>> {
   const post = await deps.postRepo.findById(input.postId);
@@ -46,13 +51,20 @@ export async function listPostReactors(
     return ok({ reactors: [] });
   }
 
-  const displayNames = await deps.userReadModel.findDisplayNamesByIds(
-    reactions.map((r) => r.userId),
+  const userIds = reactions.map((r) => r.userId);
+  const users = await deps.userRepo.findByIds(userIds);
+  const resyncedUsers = await resyncUsers(users, deps.resyncUserFromClerk);
+
+  const displayNames = new Map(
+    resyncedUsers.map((user) => [
+      user.id,
+      user.username?.trim() || user.email || 'Unknown',
+    ]),
   );
 
   const reactors = reactions.map((reaction) => ({
     userId: reaction.userId,
-    displayName: displayNames.get(reaction.userId) ?? 'Anonymous',
+    displayName: displayNames.get(reaction.userId) ?? 'Unknown',
     reactedAt: reaction.createdAt,
   }));
 

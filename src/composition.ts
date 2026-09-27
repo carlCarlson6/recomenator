@@ -1,5 +1,6 @@
+import { resyncUserFromClerk } from './modules/auth/application/ResyncUserFromClerk.js';
 import { syncClerkUser } from './modules/auth/application/SyncClerkUser.js';
-import { DrizzleUserReadModel } from './modules/auth/infrastructure/DrizzleUserReadModel.js';
+import { TanstackClerkUserProvider } from './modules/auth/infrastructure/TanstackClerkUserProvider.js';
 import { DrizzleUserRepository } from './modules/auth/infrastructure/DrizzleUserRepository.js';
 import { createGroup } from './modules/groups/application/CreateGroup.js';
 import { generateInvite } from './modules/groups/application/GenerateInvite.js';
@@ -38,7 +39,9 @@ import {
 import { DrizzleNotificationRepository } from './modules/notifications/infrastructure/DrizzleNotificationRepository.js';
 
 const userRepo = new DrizzleUserRepository();
-const userReadModel = new DrizzleUserReadModel();
+const clerkUserProvider = new TanstackClerkUserProvider();
+const resyncUserFromClerkFn = (input: { userId: string }) =>
+  resyncUserFromClerk(input, { userRepo, clerkUserProvider });
 const groupRepo = new DrizzleGroupRepository();
 const inviteRepo = new DrizzleInviteRepository();
 const membershipRepo = new DrizzleMembershipRepository();
@@ -78,7 +81,7 @@ export function createUseCases() {
       updateDisplayName(input, { membershipRepo }),
 
     createPost: (input: Parameters<typeof createPost>[0]) =>
-      createPost(input, { postRepo, membershipRepo, userRepo, linkPreviewService, draftRepo }),
+      createPost(input, { postRepo, membershipRepo, userRepo, linkPreviewService, draftRepo, resyncUserFromClerk: resyncUserFromClerkFn }),
 
     deletePost: (input: Parameters<typeof deletePost>[0]) =>
       deletePost(input, { postRepo }),
@@ -93,13 +96,34 @@ export function createUseCases() {
       deleteDraft(input, { draftRepo }),
 
     listTimelinePosts: (input: Parameters<typeof listTimelinePosts>[0]) =>
-      listTimelinePosts(input, { postRepo, membershipRepo, userRepo, postReactionRepo, replyRepo }),
+      listTimelinePosts(input, {
+        postRepo,
+        membershipRepo,
+        userRepo,
+        postReactionRepo,
+        replyRepo,
+        resyncUserFromClerk: resyncUserFromClerkFn,
+      }),
 
     listMyInteractions: (input: Parameters<typeof listMyInteractions>[0]) =>
-      listMyInteractions(input, { postRepo, membershipRepo, userRepo, postReactionRepo, replyRepo }),
+      listMyInteractions(input, {
+        postRepo,
+        membershipRepo,
+        userRepo,
+        postReactionRepo,
+        replyRepo,
+        resyncUserFromClerk: resyncUserFromClerkFn,
+      }),
 
     getPost: (input: Parameters<typeof getPost>[0]) =>
-      getPost(input, { postRepo, membershipRepo, userRepo, postReactionRepo, replyRepo }),
+      getPost(input, {
+        postRepo,
+        membershipRepo,
+        userRepo,
+        postReactionRepo,
+        replyRepo,
+        resyncUserFromClerk: resyncUserFromClerkFn,
+      }),
 
     addPostReaction: (input: Parameters<typeof addPostReaction>[0]) =>
       addPostReaction(input, { postRepo, membershipRepo, postReactionRepo }),
@@ -108,13 +132,19 @@ export function createUseCases() {
       removePostReaction(input, { postRepo, membershipRepo, postReactionRepo }),
 
     listPostReactors: (input: Parameters<typeof listPostReactors>[0]) =>
-      listPostReactors(input, { postRepo, membershipRepo, postReactionRepo, userReadModel }),
+      listPostReactors(input, {
+        postRepo,
+        membershipRepo,
+        postReactionRepo,
+        userRepo,
+        resyncUserFromClerk: resyncUserFromClerkFn,
+      }),
 
     addReply: (input: Parameters<typeof addReply>[0]) =>
-      addReply(input, { replyRepo, postRepo, membershipRepo, userRepo }),
+      addReply(input, { replyRepo, postRepo, membershipRepo, userRepo, resyncUserFromClerk: resyncUserFromClerkFn }),
 
     listReplies: (input: Parameters<typeof listReplies>[0]) =>
-      listReplies(input, { replyRepo, postRepo, membershipRepo, userRepo }),
+      listReplies(input, { replyRepo, postRepo, membershipRepo, userRepo, resyncUserFromClerk: resyncUserFromClerkFn }),
 
     deleteReply: (input: Parameters<typeof deleteReply>[0]) =>
       deleteReply(input, { replyRepo }),
