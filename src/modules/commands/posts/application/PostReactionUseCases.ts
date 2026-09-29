@@ -3,6 +3,8 @@ import type { DomainError } from '#/shared/kernel/DomainError.js';
 
 import { NotGroupMemberError } from '#/modules/commands/groups/domain/errors.js';
 import type { MembershipRepository } from '#/modules/commands/groups/domain/ports/MembershipRepository.js';
+import { notifyInteraction } from '#/modules/commands/notifications/application/NotificationUseCases.js';
+import type { NotificationRepository } from '#/modules/commands/notifications/domain/ports/NotificationRepository.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
 
 import { PostReaction } from '../domain/PostReaction.js';
@@ -16,6 +18,7 @@ export async function addPostReaction(
     postRepo: PostRepository;
     membershipRepo: MembershipRepository;
     postReactionRepo: PostReactionRepository;
+    notificationRepo: NotificationRepository;
   },
 ): Promise<Result<void, DomainError>> {
   const post = await deps.postRepo.findById(input.postId);
@@ -28,6 +31,17 @@ export async function addPostReaction(
   if (!reactionResult.ok) return reactionResult;
 
   await deps.postReactionRepo.save(reactionResult.value);
+  await notifyInteraction(
+    {
+      recipientId: post.authorId,
+      groupId: post.groupId,
+      postId: post.id,
+      actorId: input.userId,
+      type: 'reaction',
+      reactionType: input.type,
+    },
+    { notificationRepo: deps.notificationRepo },
+  );
   return ok(undefined);
 }
 

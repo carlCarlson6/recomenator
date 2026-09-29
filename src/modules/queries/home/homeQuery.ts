@@ -1,6 +1,6 @@
-import { eq, and, count, gt } from 'drizzle-orm';
+import { eq, and, count, isNull } from 'drizzle-orm';
 import { db } from '#/shared/infrastructure/db/client.js';
-import { groups, memberships, posts, replies } from '#/shared/infrastructure/db/schema.js';
+import { groups, memberships, notifications } from '#/shared/infrastructure/db/schema.js';
 
 export type GroupListItemRM = {
   id: string;
@@ -25,14 +25,12 @@ export async function getHomeData(userId: string): Promise<GroupListItemRM[]> {
 
   const unreadRows = await db
     .select({
-      groupId: memberships.groupId,
-      count: count(replies.id),
+      groupId: notifications.groupId,
+      count: count(notifications.id),
     })
-    .from(memberships)
-    .innerJoin(posts, eq(posts.groupId, memberships.groupId))
-    .innerJoin(replies, eq(replies.postId, posts.id))
-    .where(and(eq(memberships.userId, userId), gt(replies.createdAt, memberships.lastReadAt)))
-    .groupBy(memberships.groupId);
+    .from(notifications)
+    .where(and(eq(notifications.recipientId, userId), isNull(notifications.seenAt)))
+    .groupBy(notifications.groupId);
 
   const unreadMap = new Map(unreadRows.map((r) => [r.groupId, Number(r.count)]));
 

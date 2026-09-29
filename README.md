@@ -11,7 +11,7 @@ A private group app for friends to share recommendations about video games, movi
 - The app fetches link previews (Open Graph, YouTube, Spotify embeds) when a post is created.
 - Members see a reverse-chronological timeline of group recommendations and filter by category.
 - Members reply to posts to start discussions, with Reddit-style nested reply threads (reply to any reply, collapsible threads, soft-deleted replies keep their children).
-- An in-app indicator shows groups with unread replies.
+- Each group has a notification center that records interactions (reactions or replies) on a member's own recommendations, with an unseen counter that clears when the notifications page is opened.
 
 ## Tech stack
 
@@ -59,7 +59,7 @@ src/
 ### Read side (`modules/queries`)
 
 - One folder per **read model**, defined by what a view needs (`timeline`, `interactions`,
-  `postDetail`, `home`, `reactors`, `invite`, `drafts`, `groupHeader`).
+  `postDetail`, `home`, `reactors`, `notifications`, `invite`, `drafts`, `groupHeader`).
 - Shared read shapes live in `queries/shared`. `PostCardRM` is shared by timeline,
   interactions, and post detail because those views reuse the same `PostCard` UI.
 - Queries are **thin**: one `db.select()` (or a few parallel selects) that returns a plain DTO.
@@ -75,6 +75,9 @@ src/
 - Commands keep the DDD building blocks: aggregates, value objects, repository ports, and
   `Result<T, DomainError>`.
 - A command returns only what the caller needs to proceed (often just an `id`).
+- Interactions (reactions, replies) append a notification event for the post author. Events are
+  immutable: removing a reaction or deleting a post/reply does not remove them, and recording an
+  event is best-effort so it never fails the interaction.
 - Cross-module dependencies are wired explicitly in `src/composition.ts` (`createUseCases()`).
 
 ### Adding code

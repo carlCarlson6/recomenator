@@ -24,7 +24,6 @@ export type MembershipDto = {
   groupId: string;
   displayName: string;
   role: 'owner' | 'member';
-  lastReadAt: Date;
 };
 
 function toDto(membership: Membership): MembershipDto {
@@ -34,7 +33,6 @@ function toDto(membership: Membership): MembershipDto {
     groupId: membership.groupId,
     displayName: membership.displayName,
     role: membership.role,
-    lastReadAt: membership.lastReadAt,
   };
 }
 

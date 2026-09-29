@@ -25,7 +25,6 @@ export class DrizzleMembershipRepository implements MembershipRepository {
         groupId: membership.groupId,
         displayName: membership.displayName,
         role: membership.role,
-        lastReadAt: membership.lastReadAt,
         createdAt: membership.createdAt,
       })
       .onConflictDoUpdate({
@@ -33,7 +32,6 @@ export class DrizzleMembershipRepository implements MembershipRepository {
         set: {
           displayName: membership.displayName,
           role: membership.role,
-          lastReadAt: membership.lastReadAt,
         },
       });
   }

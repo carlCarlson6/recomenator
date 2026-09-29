@@ -23,7 +23,7 @@ import {
   deleteReply,
 } from './modules/commands/posts/replies/application/ReplyUseCases.js';
 import { DrizzleReplyRepository } from './modules/commands/posts/replies/infrastructure/DrizzleReplyRepository.js';
-import { markGroupAsRead } from './modules/commands/notifications/application/NotificationUseCases.js';
+import { markNotificationsSeen } from './modules/commands/notifications/application/NotificationUseCases.js';
 import { DrizzleNotificationRepository } from './modules/commands/notifications/infrastructure/DrizzleNotificationRepository.js';
 
 const userRepo = new DrizzleUserRepository();
@@ -67,18 +67,18 @@ export function createUseCases() {
       deleteDraft(input, { draftRepo }),
 
     addPostReaction: (input: Parameters<typeof addPostReaction>[0]) =>
-      addPostReaction(input, { postRepo, membershipRepo, postReactionRepo }),
+      addPostReaction(input, { postRepo, membershipRepo, postReactionRepo, notificationRepo }),
 
     removePostReaction: (input: Parameters<typeof removePostReaction>[0]) =>
       removePostReaction(input, { postRepo, membershipRepo, postReactionRepo }),
 
     addReply: (input: Parameters<typeof addReply>[0]) =>
-      addReply(input, { replyRepo, postRepo, membershipRepo }),
+      addReply(input, { replyRepo, postRepo, membershipRepo, notificationRepo }),
 
     deleteReply: (input: Parameters<typeof deleteReply>[0]) =>
       deleteReply(input, { replyRepo }),
 
-    markGroupAsRead: (input: Parameters<typeof markGroupAsRead>[0]) =>
-      markGroupAsRead(input, { notificationRepo }),
+    markNotificationsSeen: (input: Parameters<typeof markNotificationsSeen>[0]) =>
+      markNotificationsSeen(input, { notificationRepo }),
   };
 }

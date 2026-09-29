@@ -1,28 +1,37 @@
-import { and, count, eq, gt, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 
 import { db } from '#/shared/infrastructure/db/client.js';
-import { memberships, posts, replies } from '#/shared/infrastructure/db/schema.js';
+import { notifications } from '#/shared/infrastructure/db/schema.js';
 
-export class DrizzleNotificationRepository {
-  async countUnreadRepliesByGroup(userId: string): Promise<Array<{ groupId: string; count: number }>> {
-    const rows = await db
-      .select({
-        groupId: memberships.groupId,
-        count: count(replies.id).as('count'),
-      })
-      .from(memberships)
-      .innerJoin(posts, eq(posts.groupId, memberships.groupId))
-      .innerJoin(replies, eq(replies.postId, posts.id))
-      .where(and(eq(memberships.userId, userId), gt(replies.createdAt, memberships.lastReadAt)))
-      .groupBy(memberships.groupId);
+import type { Notification } from '../domain/Notification.js';
+import type { NotificationRepository } from '../domain/ports/NotificationRepository.js';
 
-    return rows.map((row) => ({ groupId: row.groupId, count: Number(row.count) }));
+export class DrizzleNotificationRepository implements NotificationRepository {
+  async save(notification: Notification): Promise<void> {
+    await db.insert(notifications).values({
+      id: notification.id,
+      recipientId: notification.recipientId,
+      groupId: notification.groupId,
+      postId: notification.postId,
+      actorId: notification.actorId,
+      type: notification.type,
+      reactionType: notification.reactionType,
+      replyId: notification.replyId,
+      seenAt: notification.seenAt,
+      createdAt: notification.createdAt,
+    });
   }
 
-  async markGroupAsRead(userId: string, groupId: string): Promise<void> {
+  async markSeen(userId: string, groupId: string): Promise<void> {
     await db
-      .update(memberships)
-      .set({ lastReadAt: sql`now()` })
-      .where(and(eq(memberships.userId, userId), eq(memberships.groupId, groupId)));
+      .update(notifications)
+      .set({ seenAt: sql`now()` })
+      .where(
+        and(
+          eq(notifications.recipientId, userId),
+          eq(notifications.groupId, groupId),
+          isNull(notifications.seenAt),
+        ),
+      );
   }
 }
