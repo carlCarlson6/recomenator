@@ -5,7 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { HeadContent, Link, Scripts, createRootRoute } from '@tanstack/react-router'
 
 import '#/env/client.js'
-import { getCurrentUserFn } from '#/modules/auth/adapters/auth.functions.js'
+import { getCurrentUserFn } from '#/modules/commands/auth/adapters/auth.functions.js'
 import { queryClient } from '#/shared/infrastructure/queryClient.js'
 import { ThemeProvider } from '#/shared/ui/ThemeProvider.js'
 

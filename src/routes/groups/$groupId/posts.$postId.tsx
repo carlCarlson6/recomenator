@@ -3,11 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute, useNavigate, useParams } from '@tanstack/react-router';
 import { ArrowLeft, Users } from 'lucide-react';
 
-import { getPostFn } from '#/modules/posts/adapters/posts.functions.js';
-import { PostCard } from '#/modules/posts/ui/PostCard.js';
-import { listRepliesFn } from '#/modules/posts/replies/adapters/replies.functions.js';
-import { ReplyForm } from '#/modules/posts/replies/ui/ReplyForm.js';
-import { ReplyList } from '#/modules/posts/replies/ui/ReplyList.js';
+import { getPostDetailFn } from '#/modules/queries/postDetail/postDetail.functions.js';
+import { PostCard } from '#/components/PostCard.js';
+import { ReplyForm } from '#/components/ReplyForm.js';
+import { ReplyList } from '#/components/ReplyList.js';
 
 export const Route = createFileRoute('/groups/$groupId/posts/$postId')({
   component: PostDetailPage,
@@ -18,17 +17,12 @@ function PostDetailPage() {
   const { userId } = useAuth()
   const navigate = useNavigate()
 
-  const { data: post } = useQuery({
+  const { data } = useQuery({
     queryKey: ['posts', postId],
-    queryFn: () => getPostFn({ data: { postId } }),
+    queryFn: () => getPostDetailFn({ data: { postId } }),
   })
 
-  const { data: replies = [] } = useQuery({
-    queryKey: ['posts', postId, 'replies'],
-    queryFn: () => listRepliesFn({ data: { postId } }),
-  })
-
-  if (!post) {
+  if (!data) {
     return <div className="p-12 text-center">Loading...</div>
   }
 
@@ -55,7 +49,7 @@ function PostDetailPage() {
 
       <div className="mt-6">
         <PostCard
-          post={post}
+          post={data.post}
           currentUserId={userId ?? undefined}
           onDelete={() => navigate({ to: '/groups/$groupId', params: { groupId } })}
         />
@@ -68,7 +62,7 @@ function PostDetailPage() {
         </div>
         <div className="mt-6">
           <ReplyList
-            replies={replies}
+            replies={data.replies}
             currentUserId={userId ?? undefined}
             postId={postId}
           />

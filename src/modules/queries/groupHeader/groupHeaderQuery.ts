@@ -8,9 +8,7 @@ export type GroupHeaderRM = {
 };
 
 export async function getGroupHeader(groupId: string): Promise<GroupHeaderRM> {
-  const group = await db.query.groups.findFirst({
-    where: eq(groups.id, groupId),
-  });
+  const [group] = await db.select().from(groups).where(eq(groups.id, groupId)).limit(1);
   if (!group) throw new Error('Group not found');
   return { id: group.id, name: group.name };
 }

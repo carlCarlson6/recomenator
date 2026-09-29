@@ -1,9 +1,7 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
-import { useQuery } from '@tanstack/react-query'
 import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 
-import { listMyGroupsFn } from '#/modules/groups/adapters/groups.functions.js'
-import { getUnreadGroupsFn } from '#/modules/notifications/adapters/notifications.functions.js'
+import { getHomeDataFn } from '#/modules/queries/home/home.functions.js'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -12,7 +10,7 @@ export const Route = createFileRoute('/')({
       return { groups: [] }
     }
 
-    const groups = await listMyGroupsFn()
+    const groups = await getHomeDataFn()
 
     if (groups.length === 1) {
       throw redirect({
@@ -28,13 +26,6 @@ export const Route = createFileRoute('/')({
 
 function Home() {
   const { groups } = Route.useLoaderData()
-
-  const { data: unread = [] } = useQuery({
-    queryKey: ['unread'],
-    queryFn: () => getUnreadGroupsFn(),
-  })
-
-  const unreadByGroup = new Map(unread.map((u) => [u.groupId, u.count]))
 
   return (
     <main className="mx-auto max-w-xl px-4 py-12">
@@ -72,30 +63,27 @@ function Home() {
             <p className="mt-4 text-muted-foreground">No groups yet.</p>
           ) : (
             <ul className="mt-4 space-y-2">
-              {groups.map((group) => {
-                const count = unreadByGroup.get(group.id) ?? 0
-                return (
-                  <li key={group.id}>
-                    <Link
-                      to="/groups/$groupId"
-                      params={{ groupId: group.id }}
-                      className="flex items-center justify-between rounded-md border border-border p-3 hover:bg-muted"
-                    >
-                      <div>
-                        <div className="font-medium">{group.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          You are {group.displayName}
-                        </div>
+              {groups.map((group) => (
+                <li key={group.id}>
+                  <Link
+                    to="/groups/$groupId"
+                    params={{ groupId: group.id }}
+                    className="flex items-center justify-between rounded-md border border-border p-3 hover:bg-muted"
+                  >
+                    <div>
+                      <div className="font-medium">{group.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        You are {group.displayName}
                       </div>
-                      {count > 0 && (
-                        <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
-                          {count}
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                )
-              })}
+                    </div>
+                    {group.unreadCount > 0 && (
+                      <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+                        {group.unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
             </ul>
           )}
         </div>

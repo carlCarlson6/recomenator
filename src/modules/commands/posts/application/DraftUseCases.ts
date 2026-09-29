@@ -92,25 +92,6 @@ export async function saveDraft(
   return ok(toDto(created.value));
 }
 
-export type ListDraftsInput = {
-  groupId: string;
-  authorId: string;
-};
-
-export async function listDrafts(
-  input: ListDraftsInput,
-  deps: {
-    draftRepo: DraftRepository;
-    membershipRepo: MembershipRepository;
-  },
-): Promise<Result<DraftDto[], DomainError>> {
-  const membership = await deps.membershipRepo.findByUserAndGroup(input.authorId, input.groupId);
-  if (!membership) return err(new NotGroupMemberError());
-
-  const drafts = await deps.draftRepo.findByGroupIdAndAuthorId(input.groupId, input.authorId);
-  return ok(drafts.map(toDto));
-}
-
 export type DeleteDraftInput = {
   draftId: string;
   authorId: string;

@@ -3,12 +3,9 @@ import { Link, createFileRoute, redirect, useNavigate } from '@tanstack/react-ro
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 
-import { getCurrentUserFn } from '#/modules/auth/adapters/auth.functions.js'
-import {
-  getInvitePreviewFn,
-  getMyMembershipForGroupFn,
-  joinGroupFn,
-} from '#/modules/groups/adapters/groups.functions.js'
+import { getCurrentUserFn } from '#/modules/commands/auth/adapters/auth.functions.js'
+import { getInvitePageDataFn } from '#/modules/queries/invite/invite.functions.js'
+import { joinGroupFn } from '#/modules/commands/groups/adapters/groups.functions.js'
 
 export const Route = createFileRoute('/groups/join/$inviteCode')({
   beforeLoad: async ({ params, location }) => {
@@ -20,25 +17,22 @@ export const Route = createFileRoute('/groups/join/$inviteCode')({
       })
     }
 
-    const preview = await getInvitePreviewFn({ data: { code: params.inviteCode } })
-    const membership = await getMyMembershipForGroupFn({
-      data: { groupId: preview.groupId },
-    })
+    const invite = await getInvitePageDataFn({ data: { code: params.inviteCode } })
 
-    if (membership) {
+    if (invite.existingMembership) {
       throw redirect({
         to: '/groups/$groupId',
-        params: { groupId: preview.groupId },
+        params: { groupId: invite.groupId },
       })
     }
 
-    return { preview }
+    return { invite }
   },
   component: JoinGroupPage,
 })
 
 function JoinGroupPage() {
-  const { preview } = Route.useRouteContext()
+  const { invite } = Route.useRouteContext()
   const { inviteCode } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -47,7 +41,7 @@ function JoinGroupPage() {
   const join = useMutation({
     mutationFn: joinGroupFn,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
+      queryClient.invalidateQueries({ queryKey: ['home'] })
       navigate({ to: '/groups/$groupId', params: { groupId: data.groupId } })
     },
   })
@@ -67,7 +61,7 @@ function JoinGroupPage() {
         Back
       </Link>
 
-      <h1 className="mt-6 text-2xl font-bold">Join {preview.groupName}</h1>
+      <h1 className="mt-6 text-2xl font-bold">Join {invite.groupName}</h1>
       <p className="mt-2 text-muted-foreground">Invitation code: {inviteCode}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">

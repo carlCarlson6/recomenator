@@ -3,11 +3,10 @@ import { Link, createFileRoute, useParams } from '@tanstack/react-router'
 import { HandHeart, Home, Plus, Settings } from 'lucide-react'
 import { useState } from 'react'
 
-import { getGroupFn } from '#/modules/groups/adapters/groups.functions.js';
-import { listMyInteractionsFn } from '#/modules/posts/adapters/posts.functions.js';
-import { PostCard } from '#/modules/posts/ui/PostCard.js';
-import { BottomBar, BottomBarItem } from '#/shared/ui/BottomBar.js';
-import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js';
+import { getInteractionsFn } from '#/modules/queries/interactions/interactions.functions.js'
+import { PostCard } from '#/components/PostCard.js'
+import { BottomBar, BottomBarItem } from '#/shared/ui/BottomBar.js'
+import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js'
 
 export const Route = createFileRoute('/groups/$groupId/interactions')({
   component: InteractionsPage,
@@ -38,12 +37,7 @@ function InteractionsPage() {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
   const [selectedTypes, setSelectedTypes] = useState<ReactionType[]>([])
 
-  const { data: group } = useQuery({
-    queryKey: ['groups', groupId],
-    queryFn: () => getGroupFn({ data: { groupId } }),
-  })
-
-  const { data: posts = [] } = useQuery({
+  const { data } = useQuery({
     queryKey: [
       'groups',
       groupId,
@@ -51,7 +45,7 @@ function InteractionsPage() {
       { categories: selectedCategories, types: selectedTypes },
     ],
     queryFn: () =>
-      listMyInteractionsFn({
+      getInteractionsFn({
         data: {
           groupId,
           categories: selectedCategories.length > 0 ? selectedCategories : undefined,
@@ -60,14 +54,14 @@ function InteractionsPage() {
       }),
   })
 
-  if (!group) {
+  if (!data) {
     return <div className="p-12 text-center">Loading...</div>
   }
 
   return (
     <>
       <main className="mx-auto max-w-xl px-4 py-12 pb-24">
-        <h1 className="text-2xl font-bold">{group.name}</h1>
+        <h1 className="text-2xl font-bold">{data.groupName}</h1>
         <p className="mt-1 text-muted-foreground">My interactions</p>
 
         <div className="mt-6 space-y-4">
@@ -121,10 +115,10 @@ function InteractionsPage() {
         </div>
 
         <div className="mt-8 space-y-4">
-          {posts.length === 0 ? (
+          {data.posts.length === 0 ? (
             <p className="text-muted-foreground">You haven&apos;t interacted with anything yet.</p>
           ) : (
-            posts.map((post) => <PostCard key={post.id} post={post} />)
+            data.posts.map((post) => <PostCard key={post.id} post={post} />)
           )}
         </div>
       </main>

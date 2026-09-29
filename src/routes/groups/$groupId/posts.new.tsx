@@ -2,7 +2,7 @@ import { useNavigate, createFileRoute, useParams } from '@tanstack/react-router'
 import { ArrowLeft, Users } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 
-import { CreatePostForm } from '#/modules/posts/ui/CreatePostForm.js';
+import { CreatePostForm } from '#/components/CreatePostForm.js';
 
 export const Route = createFileRoute('/groups/$groupId/posts/new')({
   component: NewPostPage,

@@ -30,26 +30,59 @@ A private group app for friends to share recommendations about video games, movi
 
 ## Architecture
 
-The app follows **Domain-Driven Design**, **Hexagonal Architecture**, and **Vertical Slicing**.
+The app uses **CQRS (Command Query Responsibility Segregation)**. Reads and writes are
+separate code paths, backed by the same Postgres database.
 
 ```
 src/
-  routes/              # TanStack Start file routes (inbound adapters)
-  modules/             # Vertical slices: auth, groups, posts, notifications
-    <slice>/
-      domain/          # Aggregates, value objects, repository ports
-      application/     # Use cases
-      infrastructure/  # Drizzle repositories, external adapters
-      adapters/        # Server functions (.functions.ts) + shared schemas (.schemas.ts)
-      ui/              # Components for this slice
-    posts/
-      replies/         # Submodule: nested reply threads
-      linkPreview/     # Submodule: external link preview fetching
-  shared/              # Kernel (Result, errors, ID generator) + DB client/schema
-  env/                 # T3 Env server + client schemas
+  routes/                    # TanStack Start file routes
+  components/                # Feature UI (PostCard, ReplyList, forms) consuming read models
+  modules/
+    queries/                 # READ side: thin Drizzle queries -> read models
+      shared/                # userIdentity resolver, PostCardRM assembly (reused by views)
+      <readModel>/           # one folder per read model (timeline, postDetail, home, ...)
+        <name>Query.ts        # db.select() -> plain DTO
+        <name>.functions.ts   # createServerFn wrappers
+    commands/                # WRITE side: DDD aggregates + use cases
+      <feature>/              # auth, groups, posts, notifications
+        domain/               # Aggregates, value objects, repository ports
+        application/          # Use cases (return Result)
+        infrastructure/       # Drizzle repositories, external adapters
+        adapters/             # createServerFn wrappers
+      posts/
+        replies/              # Submodule: nested reply threads
+        linkPreview/          # Submodule: external link preview fetching
+  shared/                    # Kernel (Result, errors, ID generator) + DB client/schema
+  env/                       # T3 Env server + client schemas
 ```
 
-Dependencies point inward: routes/adapters → application → domain. Infrastructure implements domain/application ports. The `src/composition.ts` file wires adapters to use cases.
+### Read side (`modules/queries`)
+
+- One folder per **read model**, defined by what a view needs (`timeline`, `interactions`,
+  `postDetail`, `home`, `reactors`, `invite`, `drafts`, `groupHeader`).
+- Shared read shapes live in `queries/shared`. `PostCardRM` is shared by timeline,
+  interactions, and post detail because those views reuse the same `PostCard` UI.
+- Queries are **thin**: one `db.select()` (or a few parallel selects) that returns a plain DTO.
+  No domain entities, no repositories, no `Result`, no writes.
+- Queries may join freely across tables — that is the point.
+- Display names are resolved by `queries/shared/userIdentity.ts` using the chain
+  `membership.displayName -> Clerk username -> email -> 'Anonymous'`. The Clerk lookup is
+  batched (`getUserList`) and never written back to the database.
+
+### Write side (`modules/commands`)
+
+- One use case per file under `<feature>/application` (`createPost`, `joinGroup`, `addReply`, ...).
+- Commands keep the DDD building blocks: aggregates, value objects, repository ports, and
+  `Result<T, DomainError>`.
+- A command returns only what the caller needs to proceed (often just an `id`).
+- Cross-module dependencies are wired explicitly in `src/composition.ts` (`createUseCases()`).
+
+### Adding code
+
+- **New read:** create `queries/<readModel>/` with a `*Query.ts` plus a `*.functions.ts`
+  server function, then consume it from the route/component.
+- **New write:** add a use case under `commands/<feature>/application/`, add any repository
+  method to the port + Drizzle implementation, and wire it in `src/composition.ts`.
 
 ## Environment variables
 
@@ -124,11 +157,15 @@ npm test
 
 - **Mobile-first** responsive design.
 - **No barrel files**; import directly from source files.
-- Use `db.select()` builder for all Drizzle queries; never use the relational API.
+- Use the `db.select()` builder for all Drizzle queries; never use the relational API.
 - App-generated prefixed text IDs; no `serial` columns and no Postgres enums.
-- Use `Result<T, DomainError>` for domain operations.
+- **CQRS:** reads live in `modules/queries` (plain DTOs, no writes); writes live in
+  `modules/commands` (use cases returning `Result<T, DomainError>`).
+- `Result<T, DomainError>` is for commands. Queries return DTOs directly and throw on
+  missing/unauthorized resources.
 - Write failing tests before implementation (TDD).
-- Tests live in `/test` at the repo root, mirroring `src/`.
+- Tests live in `/test` at the repo root, mirroring `src/` (`test/modules/queries/...`,
+  `test/modules/commands/...`).
 
 ## Deployment
 

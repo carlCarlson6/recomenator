@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import { db } from '#/shared/infrastructure/db/client.js';
 import { drafts, type Category } from '#/shared/infrastructure/db/schema.js';
@@ -10,15 +10,6 @@ export class DrizzleDraftRepository implements DraftRepository {
   async findById(id: string): Promise<Draft | null> {
     const [row] = await db.select().from(drafts).where(eq(drafts.id, id)).limit(1);
     return row ? this.toDomain(row) : null;
-  }
-
-  async findByGroupIdAndAuthorId(groupId: string, authorId: string): Promise<Draft[]> {
-    const rows = await db
-      .select()
-      .from(drafts)
-      .where(and(eq(drafts.groupId, groupId), eq(drafts.authorId, authorId)))
-      .orderBy(desc(drafts.updatedAt));
-    return rows.map((row) => this.toDomain(row));
   }
 
   async save(draft: Draft): Promise<void> {

@@ -16,14 +16,14 @@ export async function getTimeline(
   userId: string,
   category?: Category,
 ): Promise<TimelineRM> {
-  const membership = await db.query.memberships.findFirst({
-    where: and(eq(memberships.userId, userId), eq(memberships.groupId, groupId)),
-  });
+  const [membership] = await db
+    .select()
+    .from(memberships)
+    .where(and(eq(memberships.userId, userId), eq(memberships.groupId, groupId)))
+    .limit(1);
   if (!membership) throw new Error('Not a member of this group');
 
-  const group = await db.query.groups.findFirst({
-    where: eq(groups.id, groupId),
-  });
+  const [group] = await db.select().from(groups).where(eq(groups.id, groupId)).limit(1);
   if (!group) throw new Error('Group not found');
 
   const postRows = await db

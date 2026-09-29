@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { db } from '#/shared/infrastructure/db/client.js';
 import { users } from '#/shared/infrastructure/db/schema.js';
@@ -18,20 +18,6 @@ export class DrizzleUserRepository implements UserRepository {
           createdAt: row.createdAt,
         })
       : null;
-  }
-
-  async findByIds(ids: string[]): Promise<User[]> {
-    if (ids.length === 0) return [];
-    const rows = await db.select().from(users).where(inArray(users.id, ids));
-    return rows.map((row) =>
-      User.reconstitute({
-        id: row.id,
-        email: row.email,
-        username: row.username ?? null,
-        avatarUrl: row.avatarUrl,
-        createdAt: row.createdAt,
-      }),
-    );
   }
 
   async save(user: User): Promise<void> {

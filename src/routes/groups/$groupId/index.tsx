@@ -4,12 +4,11 @@ import { Link, createFileRoute, useParams } from '@tanstack/react-router'
 import { HandHeart, Home, Plus, Settings } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { getGroupFn } from '#/modules/groups/adapters/groups.functions.js';
-import { markGroupAsReadFn } from '#/modules/notifications/adapters/notifications.functions.js';
-import { listTimelinePostsFn } from '#/modules/posts/adapters/posts.functions.js';
-import { PostCard } from '#/modules/posts/ui/PostCard.js';
-import { BottomBar, BottomBarItem } from '#/shared/ui/BottomBar.js';
-import type { Category } from '#/shared/infrastructure/db/schema.js';
+import { getTimelineFn } from '#/modules/queries/timeline/timeline.functions.js'
+import { markGroupAsReadFn } from '#/modules/commands/notifications/adapters/notifications.functions.js'
+import { PostCard } from '#/components/PostCard.js'
+import { BottomBar, BottomBarItem } from '#/shared/ui/BottomBar.js'
+import type { Category } from '#/shared/infrastructure/db/schema.js'
 
 export const Route = createFileRoute('/groups/$groupId/')({
   component: GroupPage,
@@ -30,20 +29,15 @@ function GroupPage() {
   const queryClient = useQueryClient()
   const [category, setCategory] = useState<Category | undefined>(undefined)
 
-  const { data: group } = useQuery({
-    queryKey: ['groups', groupId],
-    queryFn: () => getGroupFn({ data: { groupId } }),
-  })
-
-  const { data: posts = [] } = useQuery({
+  const { data } = useQuery({
     queryKey: ['groups', groupId, 'timeline', { category }],
-    queryFn: () => listTimelinePostsFn({ data: { groupId, category } }),
+    queryFn: () => getTimelineFn({ data: { groupId, category } }),
   })
 
   const markRead = useMutation({
     mutationFn: markGroupAsReadFn,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unread'] })
+      queryClient.invalidateQueries({ queryKey: ['home'] })
     },
   })
 
@@ -51,14 +45,14 @@ function GroupPage() {
     markRead.mutate({ data: { groupId } })
   }, [groupId])
 
-  if (!group) {
+  if (!data) {
     return <div className="p-12 text-center">Loading...</div>
   }
 
   return (
     <>
       <main className="mx-auto max-w-xl px-4 py-12 pb-24">
-        <h1 className="text-2xl font-bold">{group.name}</h1>
+        <h1 className="text-2xl font-bold">{data.groupName}</h1>
 
         <div className="mt-10">
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -88,10 +82,10 @@ function GroupPage() {
           </div>
 
           <div className="mt-6 space-y-4">
-            {posts.length === 0 ? (
+            {data.posts.length === 0 ? (
               <p className="text-muted-foreground">No recommendations yet.</p>
             ) : (
-              posts.map((post) => <PostCard key={post.id} post={post} currentUserId={userId ?? undefined} />)
+              data.posts.map((post) => <PostCard key={post.id} post={post} currentUserId={userId ?? undefined} />)
             )}
           </div>
         </div>

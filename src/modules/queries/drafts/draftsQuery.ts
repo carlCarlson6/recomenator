@@ -1,11 +1,12 @@
 import { eq, and, desc } from 'drizzle-orm';
 import { db } from '#/shared/infrastructure/db/client.js';
 import { drafts } from '#/shared/infrastructure/db/schema.js';
+import type { Category } from '#/shared/infrastructure/db/schema.js';
 
 export type DraftListRM = {
   id: string;
   groupId: string;
-  category: string;
+  category: Category;
   title: string | null;
   description: string | null;
   externalUrl: string | null;
