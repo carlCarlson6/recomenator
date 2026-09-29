@@ -27,14 +27,14 @@ export async function getPostDetail(
   postId: string,
   userId: string,
 ): Promise<PostDetailRM> {
-  const postRow = await db.query.posts.findFirst({
-    where: eq(posts.id, postId),
-  });
+  const [postRow] = await db.select().from(posts).where(eq(posts.id, postId)).limit(1);
   if (!postRow) throw new Error('Post not found');
 
-  const membership = await db.query.memberships.findFirst({
-    where: and(eq(memberships.userId, userId), eq(memberships.groupId, postRow.groupId)),
-  });
+  const [membership] = await db
+    .select()
+    .from(memberships)
+    .where(and(eq(memberships.userId, userId), eq(memberships.groupId, postRow.groupId)))
+    .limit(1);
   if (!membership) throw new Error('Not a member of this group');
 
   const groupId = postRow.groupId;

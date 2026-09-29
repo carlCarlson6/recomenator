@@ -3,7 +3,7 @@ import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 
-import { createGroupFn } from '#/modules/groups/adapters/groups.functions.js'
+import { createGroupFn } from '#/modules/commands/groups/adapters/groups.functions.js'
 
 export const Route = createFileRoute('/groups/new')({ component: NewGroupPage })
 

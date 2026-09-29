@@ -3,11 +3,11 @@ import { Link, createFileRoute, useParams } from '@tanstack/react-router'
 import { ArrowLeft, Users } from 'lucide-react'
 import { useState } from 'react'
 
+import { getGroupFn } from '#/modules/queries/groupHeader/groupHeader.functions.js'
 import {
   generateInviteFn,
-  getGroupFn,
   updateDisplayNameFn,
-} from '#/modules/groups/adapters/groups.functions.js'
+} from '#/modules/commands/groups/adapters/groups.functions.js'
 import { ThemeSelect } from '#/shared/ui/ThemeSelect.js'
 
 export const Route = createFileRoute('/groups/$groupId/settings')({
@@ -26,7 +26,7 @@ function GroupSettingsPage() {
   const updateDisplayName = useMutation({
     mutationFn: updateDisplayNameFn,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
+      queryClient.invalidateQueries({ queryKey: ['home'] })
       queryClient.invalidateQueries({ queryKey: ['groups', groupId] })
     },
   })

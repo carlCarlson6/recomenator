@@ -1,10 +1,13 @@
 import { createServerFn } from '@tanstack/react-start';
+import { z } from 'zod';
 import { protectedMiddleware } from '#/shared/infrastructure/auth/protectedMiddleware.js';
 import { listDrafts } from './draftsQuery.js';
 
+const schema = z.object({ groupId: z.string().min(1) });
+
 export const listDraftsFn = createServerFn({ method: 'GET' })
   .middleware([protectedMiddleware])
+  .validator(schema)
   .handler(async ({ context, data }) => {
-    const { groupId } = data as unknown as { groupId: string };
-    return listDrafts(context.userId, groupId);
+    return listDrafts(context.userId, data.groupId);
   });

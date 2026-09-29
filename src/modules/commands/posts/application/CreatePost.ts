@@ -5,7 +5,6 @@ import { fetchLinkPreview } from '../linkPreview/application/FetchLinkPreview.js
 import type { LinkPreviewService } from '../linkPreview/application/ports/LinkPreviewService.js';
 import { NotGroupMemberError } from '#/modules/commands/groups/domain/errors.js';
 import type { MembershipRepository } from '#/modules/commands/groups/domain/ports/MembershipRepository.js';
-import type { UserRepository } from '#/modules/commands/auth/domain/ports/UserRepository.js';
 import type { Category } from '#/shared/infrastructure/db/schema.js';
 
 import { Post } from '../domain/Post.js';
@@ -28,7 +27,6 @@ export async function createPost(
   deps: {
     postRepo: PostRepository;
     membershipRepo: MembershipRepository;
-    userRepo: UserRepository;
     linkPreviewService: LinkPreviewService;
     draftRepo: DraftRepository;
   },

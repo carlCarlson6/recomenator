@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '#/shared/infrastructure/db/client.js';
-import { invites, groups } from '#/shared/infrastructure/db/schema.js';
+import { invites, groups, memberships } from '#/shared/infrastructure/db/schema.js';
 
 export type InvitePageRM = {
   groupId: string;
@@ -12,19 +12,17 @@ export async function getInvitePageData(
   code: string,
   userId: string,
 ): Promise<InvitePageRM> {
-  const invite = await db.query.invites.findFirst({
-    where: eq(invites.code, code),
-  });
+  const [invite] = await db.select().from(invites).where(eq(invites.code, code)).limit(1);
   if (!invite) throw new Error('Invalid invite code');
 
-  const group = await db.query.groups.findFirst({
-    where: eq(groups.id, invite.groupId),
-  });
+  const [group] = await db.select().from(groups).where(eq(groups.id, invite.groupId)).limit(1);
   if (!group) throw new Error('Group not found');
 
-  const membership = await db.query.memberships.findFirst({
-    where: (m) => eq(m.userId, userId) && eq(m.groupId, invite.groupId),
-  });
+  const [membership] = await db
+    .select()
+    .from(memberships)
+    .where(and(eq(memberships.userId, userId), eq(memberships.groupId, invite.groupId)))
+    .limit(1);
 
   return {
     groupId: group.id,
