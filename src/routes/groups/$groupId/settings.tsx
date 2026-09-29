@@ -38,12 +38,14 @@ function GroupSettingsPage() {
     },
   })
 
-  const [displayName, setDisplayName] = useState('')
+  const [displayName, setDisplayName] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    updateDisplayName.mutate({ data: { groupId, displayName } })
+    updateDisplayName.mutate({
+      data: { groupId, displayName: displayName ?? group?.displayName ?? '' },
+    })
   }
 
   const inviteCode = generateInvite.data?.code
@@ -94,7 +96,7 @@ function GroupSettingsPage() {
             </label>
             <input
               id="displayName"
-              value={displayName}
+              value={displayName ?? group.displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2"
               required
