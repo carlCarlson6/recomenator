@@ -7,6 +7,8 @@ import { Post } from '#/modules/commands/posts/domain/Post.js';
 import type { PostRepository } from '#/modules/commands/posts/domain/ports/PostRepository.js';
 import { Membership } from '#/modules/commands/groups/domain/Membership.js';
 import type { MembershipRepository } from '#/modules/commands/groups/domain/ports/MembershipRepository.js';
+import { Notification } from '#/modules/commands/notifications/domain/Notification.js';
+import type { NotificationRepository } from '#/modules/commands/notifications/domain/ports/NotificationRepository.js';
 import type { Category } from '#/shared/infrastructure/db/schema.js';
 
 class InMemoryReplyRepository implements ReplyRepository {
@@ -63,11 +65,24 @@ class InMemoryMembershipRepository implements MembershipRepository {
   }
 }
 
+class InMemoryNotificationRepository implements NotificationRepository {
+  notifications: Notification[] = [];
+  shouldFail = false;
+
+  async save(notification: Notification): Promise<void> {
+    if (this.shouldFail) throw new Error('notification save failed');
+    this.notifications.push(notification);
+  }
+
+  async markSeen(): Promise<void> {}
+}
+
 function createDeps() {
   const replyRepo = new InMemoryReplyRepository();
   const postRepo = new InMemoryPostRepository();
   const membershipRepo = new InMemoryMembershipRepository();
-  return { replyRepo, postRepo, membershipRepo };
+  const notificationRepo = new InMemoryNotificationRepository();
+  return { replyRepo, postRepo, membershipRepo, notificationRepo };
 }
 
 function createPost(overrides?: { groupId?: string; authorId?: string }) {
@@ -112,6 +127,92 @@ describe('ReplyUseCases', () => {
       expect(result.value.parentId).toBeNull();
       expect(result.value.authorDisplayName).toBe('Alice');
 
+      const stored = await deps.replyRepo.findById(result.value.id);
+      expect(stored).not.toBeNull();
+    });
+
+    it('notifies the post author when another user replies', async () => {
+      const deps = createDeps();
+      const post = createPost({ authorId: 'usr_1' });
+      deps.postRepo.add(post);
+      deps.membershipRepo.add(createMembership({ userId: 'usr_1', displayName: 'Alice' }));
+      deps.membershipRepo.add(createMembership({ userId: 'usr_2', displayName: 'Bob' }));
+
+      const result = await addReply(
+        { postId: post.id, authorId: 'usr_2', content: 'Nice!' },
+        deps,
+      );
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      expect(deps.notificationRepo.notifications).toHaveLength(1);
+      const notification = deps.notificationRepo.notifications[0];
+      expect(notification.recipientId).toBe('usr_1');
+      expect(notification.actorId).toBe('usr_2');
+      expect(notification.groupId).toBe(post.groupId);
+      expect(notification.postId).toBe(post.id);
+      expect(notification.type).toBe('reply');
+      expect(notification.replyId).toBe(result.value.id);
+    });
+
+    it('notifies only the post author for a nested reply, not the parent reply author', async () => {
+      const deps = createDeps();
+      const post = createPost({ authorId: 'usr_1' });
+      deps.postRepo.add(post);
+      deps.membershipRepo.add(createMembership({ userId: 'usr_1', displayName: 'Alice' }));
+      deps.membershipRepo.add(createMembership({ userId: 'usr_2', displayName: 'Bob' }));
+      deps.membershipRepo.add(createMembership({ userId: 'usr_3', displayName: 'Cara' }));
+
+      const parent = await addReply(
+        { postId: post.id, authorId: 'usr_2', content: 'Parent' },
+        deps,
+      );
+      expect(parent.ok).toBe(true);
+      if (!parent.ok) return;
+
+      const child = await addReply(
+        { postId: post.id, authorId: 'usr_3', content: 'Child', parentId: parent.value.id },
+        deps,
+      );
+
+      expect(child.ok).toBe(true);
+      expect(deps.notificationRepo.notifications).toHaveLength(2);
+      expect(deps.notificationRepo.notifications.map((n) => n.recipientId)).toEqual([
+        'usr_1',
+        'usr_1',
+      ]);
+    });
+
+    it('does not notify when the post author replies to their own post', async () => {
+      const deps = createDeps();
+      const post = createPost({ authorId: 'usr_1' });
+      deps.postRepo.add(post);
+      deps.membershipRepo.add(createMembership({ userId: 'usr_1', displayName: 'Alice' }));
+
+      const result = await addReply(
+        { postId: post.id, authorId: 'usr_1', content: 'Mine' },
+        deps,
+      );
+
+      expect(result.ok).toBe(true);
+      expect(deps.notificationRepo.notifications).toHaveLength(0);
+    });
+
+    it('still adds the reply when the notification repository fails', async () => {
+      const deps = createDeps();
+      const post = createPost({ authorId: 'usr_1' });
+      deps.postRepo.add(post);
+      deps.membershipRepo.add(createMembership({ userId: 'usr_1', displayName: 'Alice' }));
+      deps.membershipRepo.add(createMembership({ userId: 'usr_2', displayName: 'Bob' }));
+      deps.notificationRepo.shouldFail = true;
+
+      const result = await addReply(
+        { postId: post.id, authorId: 'usr_2', content: 'Nice!' },
+        deps,
+      );
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
       const stored = await deps.replyRepo.findById(result.value.id);
       expect(stored).not.toBeNull();
     });

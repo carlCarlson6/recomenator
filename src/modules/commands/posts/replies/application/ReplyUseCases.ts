@@ -3,6 +3,8 @@ import { UnauthorizedError, type DomainError } from '#/shared/kernel/DomainError
 
 import { NotGroupMemberError } from '#/modules/commands/groups/domain/errors.js';
 import type { MembershipRepository } from '#/modules/commands/groups/domain/ports/MembershipRepository.js';
+import { notifyInteraction } from '#/modules/commands/notifications/application/NotificationUseCases.js';
+import type { NotificationRepository } from '#/modules/commands/notifications/domain/ports/NotificationRepository.js';
 import type { PostRepository } from '../../domain/ports/PostRepository.js';
 import { PostNotFoundError } from '../../domain/errors.js';
 
@@ -40,6 +42,7 @@ export async function addReply(
     replyRepo: ReplyRepository;
     postRepo: PostRepository;
     membershipRepo: MembershipRepository;
+    notificationRepo: NotificationRepository;
   },
 ): Promise<Result<ReplyDto, DomainError>> {
   const post = await deps.postRepo.findById(input.postId);
@@ -64,6 +67,17 @@ export async function addReply(
   if (!replyResult.ok) return replyResult;
 
   await deps.replyRepo.save(replyResult.value);
+  await notifyInteraction(
+    {
+      recipientId: post.authorId,
+      groupId: post.groupId,
+      postId: post.id,
+      actorId: input.authorId,
+      type: 'reply',
+      replyId: replyResult.value.id,
+    },
+    { notificationRepo: deps.notificationRepo },
+  );
 
   return ok(toDto(replyResult.value, membership.displayName));
 }

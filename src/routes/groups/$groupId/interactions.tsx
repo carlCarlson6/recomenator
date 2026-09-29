@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link, createFileRoute, useParams } from '@tanstack/react-router'
-import { HandHeart, Home, Plus, Settings } from 'lucide-react'
+import { createFileRoute, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { getInteractionsFn } from '#/modules/queries/interactions/interactions.functions.js'
 import { PostCard } from '#/components/PostCard.js'
-import { BottomBar, BottomBarItem } from '#/shared/ui/BottomBar.js'
 import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js'
 
 export const Route = createFileRoute('/groups/$groupId/interactions')({
@@ -122,52 +120,6 @@ function InteractionsPage() {
           )}
         </div>
       </main>
-
-      <BottomBar>
-        <Link
-          to="/groups/$groupId"
-          params={{ groupId }}
-          className="flex-1"
-        >
-          <BottomBarItem>
-            <Home className="h-5 w-5" />
-            <span>Home</span>
-          </BottomBarItem>
-        </Link>
-
-        <Link
-          to="/groups/$groupId/interactions"
-          params={{ groupId }}
-          className="flex-1"
-        >
-          <BottomBarItem active>
-            <HandHeart className="h-5 w-5" />
-            <span>Interactions</span>
-          </BottomBarItem>
-        </Link>
-
-        <Link
-          to="/groups/$groupId/posts/new"
-          params={{ groupId }}
-          className="flex-1"
-        >
-          <BottomBarItem>
-            <Plus className="h-5 w-5" />
-            <span>Recommend</span>
-          </BottomBarItem>
-        </Link>
-
-        <Link
-          to="/groups/$groupId/settings"
-          params={{ groupId }}
-          className="flex-1"
-        >
-          <BottomBarItem>
-            <Settings className="h-5 w-5" />
-            <span>Settings</span>
-          </BottomBarItem>
-        </Link>
-      </BottomBar>
     </>
   )
 }

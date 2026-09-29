@@ -10,11 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GroupsGroupIdRouteImport } from './routes/groups/$groupId'
 import { Route as GroupsNewRouteImport } from './routes/groups/new'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as GroupsGroupIdIndexRouteImport } from './routes/groups/$groupId/index'
 import { Route as GroupsGroupIdInteractionsRouteImport } from './routes/groups/$groupId/interactions'
+import { Route as GroupsGroupIdNotificationsRouteImport } from './routes/groups/$groupId/notifications'
 import { Route as GroupsGroupIdSettingsRouteImport } from './routes/groups/$groupId/settings'
 import { Route as GroupsJoinInviteCodeRouteImport } from './routes/groups/join.$inviteCode'
 import { Route as GroupsGroupIdPostsPostIdRouteImport } from './routes/groups/$groupId/posts.$postId'
@@ -23,6 +25,11 @@ import { Route as GroupsGroupIdPostsNewRouteImport } from './routes/groups/$grou
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
+  id: '/groups/$groupId',
+  path: '/groups/$groupId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsNewRoute = GroupsNewRouteImport.update({
@@ -41,15 +48,21 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsGroupIdIndexRoute = GroupsGroupIdIndexRouteImport.update({
-  id: '/groups/$groupId/',
-  path: '/groups/$groupId/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => GroupsGroupIdRoute,
 } as any)
 const GroupsGroupIdInteractionsRoute =
   GroupsGroupIdInteractionsRouteImport.update({
-    id: '/groups/$groupId/interactions',
-    path: '/groups/$groupId/interactions',
-    getParentRoute: () => rootRouteImport,
+    id: '/interactions',
+    path: '/interactions',
+    getParentRoute: () => GroupsGroupIdRoute,
+  } as any)
+const GroupsGroupIdNotificationsRoute =
+  GroupsGroupIdNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => GroupsGroupIdRoute,
   } as any)
 const GroupsGroupIdSettingsRoute = GroupsGroupIdSettingsRouteImport.update({
   id: '/settings',
@@ -75,10 +88,12 @@ const GroupsGroupIdPostsNewRoute = GroupsGroupIdPostsNewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups/new': typeof GroupsNewRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/groups/$groupId/interactions': typeof GroupsGroupIdInteractionsRoute
+  '/groups/$groupId/notifications': typeof GroupsGroupIdNotificationsRoute
   '/groups/$groupId/settings': typeof GroupsGroupIdSettingsRoute
   '/groups/join/$inviteCode': typeof GroupsJoinInviteCodeRoute
   '/groups/$groupId/': typeof GroupsGroupIdIndexRoute
@@ -91,6 +106,7 @@ export interface FileRoutesByTo {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/groups/$groupId/interactions': typeof GroupsGroupIdInteractionsRoute
+  '/groups/$groupId/notifications': typeof GroupsGroupIdNotificationsRoute
   '/groups/$groupId/settings': typeof GroupsGroupIdSettingsRoute
   '/groups/join/$inviteCode': typeof GroupsJoinInviteCodeRoute
   '/groups/$groupId': typeof GroupsGroupIdIndexRoute
@@ -100,10 +116,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/groups/$groupId': typeof GroupsGroupIdRouteWithChildren
   '/groups/new': typeof GroupsNewRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/groups/$groupId/interactions': typeof GroupsGroupIdInteractionsRoute
+  '/groups/$groupId/notifications': typeof GroupsGroupIdNotificationsRoute
   '/groups/$groupId/settings': typeof GroupsGroupIdSettingsRoute
   '/groups/join/$inviteCode': typeof GroupsJoinInviteCodeRoute
   '/groups/$groupId/': typeof GroupsGroupIdIndexRoute
@@ -114,10 +132,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/groups/$groupId'
     | '/groups/new'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/groups/$groupId/interactions'
+    | '/groups/$groupId/notifications'
     | '/groups/$groupId/settings'
     | '/groups/join/$inviteCode'
     | '/groups/$groupId/'
@@ -130,6 +150,7 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/groups/$groupId/interactions'
+    | '/groups/$groupId/notifications'
     | '/groups/$groupId/settings'
     | '/groups/join/$inviteCode'
     | '/groups/$groupId'
@@ -138,10 +159,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/groups/$groupId'
     | '/groups/new'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/groups/$groupId/interactions'
+    | '/groups/$groupId/notifications'
     | '/groups/$groupId/settings'
     | '/groups/join/$inviteCode'
     | '/groups/$groupId/'
@@ -151,12 +174,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GroupsGroupIdRoute: typeof GroupsGroupIdRouteWithChildren
   GroupsNewRoute: typeof GroupsNewRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
-  GroupsGroupIdInteractionsRoute: typeof GroupsGroupIdInteractionsRoute
   GroupsJoinInviteCodeRoute: typeof GroupsJoinInviteCodeRoute
-  GroupsGroupIdIndexRoute: typeof GroupsGroupIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -166,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groups/$groupId': {
+      id: '/groups/$groupId'
+      path: '/groups/$groupId'
+      fullPath: '/groups/$groupId'
+      preLoaderRoute: typeof GroupsGroupIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/groups/new': {
@@ -191,17 +220,24 @@ declare module '@tanstack/react-router' {
     }
     '/groups/$groupId/': {
       id: '/groups/$groupId/'
-      path: '/groups/$groupId'
+      path: '/'
       fullPath: '/groups/$groupId/'
       preLoaderRoute: typeof GroupsGroupIdIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
     }
     '/groups/$groupId/interactions': {
       id: '/groups/$groupId/interactions'
-      path: '/groups/$groupId/interactions'
+      path: '/interactions'
       fullPath: '/groups/$groupId/interactions'
       preLoaderRoute: typeof GroupsGroupIdInteractionsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
+    }
+    '/groups/$groupId/notifications': {
+      id: '/groups/$groupId/notifications'
+      path: '/notifications'
+      fullPath: '/groups/$groupId/notifications'
+      preLoaderRoute: typeof GroupsGroupIdNotificationsRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
     }
     '/groups/$groupId/settings': {
       id: '/groups/$groupId/settings'
@@ -234,25 +270,36 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface GroupsGroupIdRouteChildren {
+  GroupsGroupIdInteractionsRoute: typeof GroupsGroupIdInteractionsRoute
+  GroupsGroupIdNotificationsRoute: typeof GroupsGroupIdNotificationsRoute
+  GroupsGroupIdSettingsRoute: typeof GroupsGroupIdSettingsRoute
+  GroupsGroupIdIndexRoute: typeof GroupsGroupIdIndexRoute
+  GroupsGroupIdPostsPostIdRoute: typeof GroupsGroupIdPostsPostIdRoute
+  GroupsGroupIdPostsNewRoute: typeof GroupsGroupIdPostsNewRoute
+}
+
+const GroupsGroupIdRouteChildren: GroupsGroupIdRouteChildren = {
+  GroupsGroupIdInteractionsRoute: GroupsGroupIdInteractionsRoute,
+  GroupsGroupIdNotificationsRoute: GroupsGroupIdNotificationsRoute,
+  GroupsGroupIdSettingsRoute: GroupsGroupIdSettingsRoute,
+  GroupsGroupIdIndexRoute: GroupsGroupIdIndexRoute,
+  GroupsGroupIdPostsPostIdRoute: GroupsGroupIdPostsPostIdRoute,
+  GroupsGroupIdPostsNewRoute: GroupsGroupIdPostsNewRoute,
+}
+
+const GroupsGroupIdRouteWithChildren = GroupsGroupIdRoute._addFileChildren(
+  GroupsGroupIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GroupsGroupIdRoute: GroupsGroupIdRouteWithChildren,
   GroupsNewRoute: GroupsNewRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
-  GroupsGroupIdInteractionsRoute: GroupsGroupIdInteractionsRoute,
   GroupsJoinInviteCodeRoute: GroupsJoinInviteCodeRoute,
-  GroupsGroupIdIndexRoute: GroupsGroupIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

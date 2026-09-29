@@ -7,6 +7,7 @@ import { timestamps } from './timestamps.js';
 export type Role = 'owner' | 'member';
 export type Category = 'VIDEO_GAMES' | 'MOVIES' | 'SHOWS' | 'MUSIC' | 'BOOKS' | 'MISC';
 export type ReactionType = 'interested' | 'liked' | 'not_liked' | 'viewed';
+export type NotificationType = 'reaction' | 'reply';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey().notNull(),
@@ -69,9 +70,6 @@ export const memberships = pgTable(
       .notNull(),
     displayName: text('display_name').notNull(),
     role: text('role').$type<Role>().notNull().default('member'),
-    lastReadAt: timestamp('last_read_at', { withTimezone: true, mode: 'date' })
-      .notNull()
-      .defaultNow(),
     ...timestamps,
   },
   (t) => [
@@ -180,5 +178,38 @@ export const postReactions = pgTable(
     uniqueIndex('post_reactions_post_id_user_id_type_unique').on(t.postId, t.userId, t.type),
     index('post_reactions_post_id_type_idx').on(t.postId, t.type),
     index('post_reactions_user_id_type_created_at_idx').on(t.userId, t.type, t.createdAt),
+  ],
+);
+
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => createId('ntf'))
+      .notNull(),
+    recipientId: text('recipient_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    groupId: text('group_id')
+      .references(() => groups.id, { onDelete: 'cascade' })
+      .notNull(),
+    postId: text('post_id').references(() => posts.id, { onDelete: 'set null' }),
+    actorId: text('actor_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    type: text('type').$type<NotificationType>().notNull(),
+    reactionType: text('reaction_type').$type<ReactionType>(),
+    replyId: text('reply_id').references(() => replies.id, { onDelete: 'set null' }),
+    seenAt: timestamp('seen_at', { withTimezone: true, mode: 'date' }),
+    ...timestamps,
+  },
+  (t) => [
+    index('notifications_recipient_id_group_id_seen_at_idx').on(t.recipientId, t.groupId, t.seenAt),
+    index('notifications_recipient_id_group_id_created_at_idx').on(
+      t.recipientId,
+      t.groupId,
+      t.createdAt,
+    ),
   ],
 );

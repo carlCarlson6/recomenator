@@ -11,7 +11,6 @@ export class Membership {
     readonly groupId: string,
     readonly displayName: string,
     readonly role: Role,
-    readonly lastReadAt: Date,
     readonly createdAt: Date,
   ) {}
 
@@ -33,7 +32,6 @@ export class Membership {
         trimmed,
         input.role ?? 'member',
         new Date(),
-        new Date(),
       ),
     );
   }
@@ -44,7 +42,6 @@ export class Membership {
     groupId: string;
     displayName: string;
     role: Role;
-    lastReadAt: Date;
     createdAt: Date;
   }): Membership {
     return new Membership(
@@ -53,7 +50,6 @@ export class Membership {
       input.groupId,
       input.displayName,
       input.role,
-      input.lastReadAt,
       input.createdAt,
     );
   }
@@ -70,21 +66,8 @@ export class Membership {
         this.groupId,
         trimmed,
         this.role,
-        this.lastReadAt,
         this.createdAt,
       ),
-    );
-  }
-
-  markRead(): Membership {
-    return new Membership(
-      this.id,
-      this.userId,
-      this.groupId,
-      this.displayName,
-      this.role,
-      new Date(),
-      this.createdAt,
     );
   }
 }
