@@ -1,6 +1,4 @@
 - notifications te see if someone has replied or reacted to your post
 - update profile image
-- when click on home redirct to current group
 - review initial app flow, redirect to group, make group default
 - introduce effect-ts ?? http://skills.sh/effect-ts/skills/effect-ts
-- review read models, how to improve performance?
