@@ -20,7 +20,7 @@ const bucket = requireEnv('S3_AVATAR_BUCKET');
 
 const origins = (process.env.AVATAR_CORS_ORIGINS ?? 'http://localhost:3000')
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
   .filter(Boolean);
 
 if (origins.length === 0) {
