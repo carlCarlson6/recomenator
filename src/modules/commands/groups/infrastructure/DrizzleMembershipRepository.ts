@@ -24,6 +24,7 @@ export class DrizzleMembershipRepository implements MembershipRepository {
         userId: membership.userId,
         groupId: membership.groupId,
         displayName: membership.displayName,
+        avatarUrl: membership.avatarUrl,
         role: membership.role,
         createdAt: membership.createdAt,
       })
@@ -31,6 +32,7 @@ export class DrizzleMembershipRepository implements MembershipRepository {
         target: memberships.id,
         set: {
           displayName: membership.displayName,
+          avatarUrl: membership.avatarUrl,
           role: membership.role,
         },
       });

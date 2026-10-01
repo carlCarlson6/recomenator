@@ -2,11 +2,12 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '#/shared/infrastructure/db/client.js';
 import { postReactions, posts, memberships, users } from '#/shared/infrastructure/db/schema.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
-import { resolveDisplayNames } from '../shared/userIdentity.js';
+import { resolveIdentities } from '../shared/userIdentity.js';
 
 export type ReactorListRM = {
   userId: string;
   displayName: string;
+  avatarUrl: string | null;
   reactedAt: Date;
 };
 
@@ -30,6 +31,7 @@ export async function listReactors(
       userId: postReactions.userId,
       createdAt: postReactions.createdAt,
       displayName: memberships.displayName,
+      avatarUrl: memberships.avatarUrl,
       email: users.email,
     })
     .from(postReactions)
@@ -41,17 +43,19 @@ export async function listReactors(
     .where(and(eq(postReactions.postId, postId), eq(postReactions.type, type)))
     .orderBy(postReactions.createdAt);
 
-  const displayNameMap = await resolveDisplayNames(
+  const identityMap = await resolveIdentities(
     rows.map((r) => ({
       userId: r.userId,
       displayName: r.displayName,
       email: r.email,
+      avatarUrl: r.avatarUrl,
     })),
   );
 
   return rows.map((r) => ({
     userId: r.userId,
-    displayName: displayNameMap.get(r.userId) ?? 'Anonymous',
+    displayName: identityMap.get(r.userId)?.displayName ?? 'Anonymous',
+    avatarUrl: identityMap.get(r.userId)?.avatarUrl ?? null,
     reactedAt: r.createdAt,
   }));
 }

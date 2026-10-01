@@ -8,6 +8,7 @@ import {
   generateInviteFn,
   updateDisplayNameFn,
 } from '#/modules/commands/groups/adapters/groups.functions.js'
+import { AvatarUploader } from '#/components/AvatarUploader.js'
 import { ThemeSelect } from '#/shared/ui/ThemeSelect.js'
 
 export const Route = createFileRoute('/groups/$groupId/settings')({
@@ -88,6 +89,15 @@ function GroupSettingsPage() {
       <h1 className="mt-6 text-2xl font-bold">{group.name} settings</h1>
 
       <section className="mt-8">
+        <h2 className="text-lg font-semibold">Your photo</h2>
+        <AvatarUploader
+          groupId={groupId}
+          displayName={group.displayName}
+          avatarUrl={group.avatarUrl}
+        />
+      </section>
+
+      <section className="mt-10">
         <h2 className="text-lg font-semibold">Your display name</h2>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>

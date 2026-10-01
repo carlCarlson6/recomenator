@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import { getGroupNotificationsFn } from '#/modules/queries/notifications/notifications.functions.js'
 import type { NotificationRM } from '#/modules/queries/notifications/notificationsQuery.js'
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js'
+import { Avatar } from '#/components/Avatar.js'
 
 export const Route = createFileRoute('/groups/$groupId/notifications')({
   component: NotificationsPage,
@@ -75,15 +76,22 @@ function NotificationsPage() {
                   notification.seenAt === null ? 'bg-muted' : ''
                 }`}
               >
-                <p className="text-sm">
-                  <span className="font-medium">{notification.actorDisplayName}</span>{' '}
-                  {notificationText(notification)}{' '}
-                  {notification.postTitle ? (
-                    <span className="font-medium">{notification.postTitle}</span>
-                  ) : (
-                    <span className="text-muted-foreground">a removed recommendation</span>
-                  )}
-                </p>
+                <div className="flex items-start gap-2">
+                  <Avatar
+                    src={notification.actorAvatarUrl}
+                    name={notification.actorDisplayName}
+                    size="sm"
+                  />
+                  <p className="text-sm">
+                    <span className="font-medium">{notification.actorDisplayName}</span>{' '}
+                    {notificationText(notification)}{' '}
+                    {notification.postTitle ? (
+                      <span className="font-medium">{notification.postTitle}</span>
+                    ) : (
+                      <span className="text-muted-foreground">a removed recommendation</span>
+                    )}
+                  </p>
+                </div>
                 {notification.type === 'reply' && notification.replyContent && (
                   <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                     {notification.replyContent}

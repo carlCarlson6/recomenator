@@ -2,7 +2,7 @@ import { eq, and, inArray, desc, isNull, sql } from 'drizzle-orm';
 import { db } from '#/shared/infrastructure/db/client.js';
 import { posts, memberships, users, postReactions, replies, groups } from '#/shared/infrastructure/db/schema.js';
 import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js';
-import { resolveDisplayNames } from '../shared/userIdentity.js';
+import { resolveIdentities } from '../shared/userIdentity.js';
 import { buildPostCardRM, type PostCardRM } from '../shared/postCardQuery.js';
 
 export type TimelineRM = {
@@ -40,6 +40,7 @@ export async function getTimeline(
       rating: posts.rating,
       createdAt: posts.createdAt,
       authorDisplayName: memberships.displayName,
+      authorAvatarUrl: memberships.avatarUrl,
       authorEmail: users.email,
     })
     .from(posts)
@@ -88,11 +89,12 @@ export async function getTimeline(
       .groupBy(replies.postId),
   ]);
 
-  const displayNameMap = await resolveDisplayNames(
+  const identityMap = await resolveIdentities(
     postRows.map((p) => ({
       userId: p.authorId,
       displayName: p.authorDisplayName,
       email: p.authorEmail,
+      avatarUrl: p.authorAvatarUrl,
     })),
   );
 
@@ -132,7 +134,10 @@ export async function getTimeline(
         rating: row.rating,
         createdAt: row.createdAt,
       },
-      displayNameMap.get(row.authorId) ?? 'Anonymous',
+      {
+        displayName: identityMap.get(row.authorId)?.displayName ?? 'Anonymous',
+        avatarUrl: identityMap.get(row.authorId)?.avatarUrl ?? null,
+      },
       reactions,
       myReactionsMap.get(row.id) ?? [],
       replyCountMap.get(row.id) ?? 0,

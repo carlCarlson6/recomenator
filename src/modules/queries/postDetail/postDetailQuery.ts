@@ -2,7 +2,7 @@ import { eq, and, isNull, sql } from 'drizzle-orm';
 import { db } from '#/shared/infrastructure/db/client.js';
 import { posts, memberships, users, postReactions, replies } from '#/shared/infrastructure/db/schema.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
-import { resolveDisplayNames } from '../shared/userIdentity.js';
+import { resolveIdentities } from '../shared/userIdentity.js';
 import { buildPostCardRM, type PostCardRM } from '../shared/postCardQuery.js';
 
 export type ReplyNodeDto = {
@@ -10,6 +10,7 @@ export type ReplyNodeDto = {
   postId: string;
   authorId: string;
   authorDisplayName: string;
+  authorAvatarUrl: string | null;
   content: string;
   parentId: string | null;
   deletedAt: Date | null;
@@ -41,7 +42,11 @@ export async function getPostDetail(
 
   const [authorDisplayNameRow, countRows, myReactionRows, replyCountRows] = await Promise.all([
     db
-      .select({ displayName: memberships.displayName, email: users.email })
+      .select({
+        displayName: memberships.displayName,
+        avatarUrl: memberships.avatarUrl,
+        email: users.email,
+      })
       .from(memberships)
       .leftJoin(users, eq(users.id, postRow.authorId))
       .where(and(eq(memberships.userId, postRow.authorId), eq(memberships.groupId, groupId)))
@@ -65,11 +70,12 @@ export async function getPostDetail(
       .where(and(eq(replies.postId, postId), isNull(replies.deletedAt))),
   ]);
 
-  const displayNameMap = await resolveDisplayNames([
+  const identityMap = await resolveIdentities([
     {
       userId: postRow.authorId,
       displayName: authorDisplayNameRow[0]?.displayName,
       email: authorDisplayNameRow[0]?.email,
+      avatarUrl: authorDisplayNameRow[0]?.avatarUrl,
     },
   ]);
 
@@ -98,7 +104,10 @@ export async function getPostDetail(
       rating: postRow.rating,
       createdAt: postRow.createdAt,
     },
-    displayNameMap.get(postRow.authorId) ?? 'Anonymous',
+    {
+      displayName: identityMap.get(postRow.authorId)?.displayName ?? 'Anonymous',
+      avatarUrl: identityMap.get(postRow.authorId)?.avatarUrl ?? null,
+    },
     reactions,
     myReactionRows.map((r) => r.type),
     Number(replyCountRows[0]?.count ?? 0),
@@ -114,6 +123,7 @@ export async function getPostDetail(
       deletedAt: replies.deletedAt,
       createdAt: replies.createdAt,
       displayName: memberships.displayName,
+      avatarUrl: memberships.avatarUrl,
       email: users.email,
     })
     .from(replies)
@@ -125,11 +135,12 @@ export async function getPostDetail(
     .where(eq(replies.postId, postId))
     .orderBy(replies.createdAt);
 
-  const replyDisplayNameMap = await resolveDisplayNames(
+  const replyIdentityMap = await resolveIdentities(
     replyRows.map((r) => ({
       userId: r.authorId,
       displayName: r.displayName,
       email: r.email,
+      avatarUrl: r.avatarUrl,
     })),
   );
 
@@ -139,7 +150,8 @@ export async function getPostDetail(
       id: row.id,
       postId: row.postId,
       authorId: row.authorId,
-      authorDisplayName: replyDisplayNameMap.get(row.authorId) ?? 'Anonymous',
+      authorDisplayName: replyIdentityMap.get(row.authorId)?.displayName ?? 'Anonymous',
+      authorAvatarUrl: replyIdentityMap.get(row.authorId)?.avatarUrl ?? null,
       content: row.content,
       parentId: row.parentId,
       deletedAt: row.deletedAt,

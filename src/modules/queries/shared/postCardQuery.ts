@@ -12,10 +12,16 @@ export type PostCardRM = {
   previewEmbedHtml: string | null;
   rating: number | null;
   authorDisplayName: string;
+  authorAvatarUrl: string | null;
   reactions: Array<{ type: ReactionType; count: number }>;
   myReactions: ReactionType[];
   replyCount: number;
   createdAt: Date;
+};
+
+export type PostCardAuthor = {
+  displayName: string;
+  avatarUrl: string | null;
 };
 
 export function buildPostCardRM(
@@ -32,14 +38,15 @@ export function buildPostCardRM(
     rating: number | null;
     createdAt: Date;
   },
-  authorDisplayName: string,
+  author: PostCardAuthor,
   reactions: Array<{ type: ReactionType; count: number }>,
   myReactions: ReactionType[],
   replyCount: number,
 ): PostCardRM {
   return {
     ...post,
-    authorDisplayName,
+    authorDisplayName: author.displayName,
+    authorAvatarUrl: author.avatarUrl,
     reactions,
     myReactions,
     replyCount,

@@ -1,12 +1,18 @@
 import { syncClerkUser } from './modules/commands/auth/application/SyncClerkUser.js';
 import { DrizzleUserRepository } from './modules/commands/auth/infrastructure/DrizzleUserRepository.js';
 import { createGroup } from './modules/commands/groups/application/CreateGroup.js';
+import {
+  confirmAvatarUpload,
+  createAvatarUploadUrl,
+  removeAvatar,
+} from './modules/commands/groups/application/AvatarUseCases.js';
 import { generateInvite } from './modules/commands/groups/application/GenerateInvite.js';
 import { joinGroupWithInvite } from './modules/commands/groups/application/JoinGroup.js';
 import { updateDisplayName } from './modules/commands/groups/application/UpdateDisplayName.js';
 import { DrizzleGroupRepository } from './modules/commands/groups/infrastructure/DrizzleGroupRepository.js';
 import { DrizzleInviteRepository } from './modules/commands/groups/infrastructure/DrizzleInviteRepository.js';
 import { DrizzleMembershipRepository } from './modules/commands/groups/infrastructure/DrizzleMembershipRepository.js';
+import { S3AvatarStorage } from './modules/commands/groups/infrastructure/S3AvatarStorage.js';
 import { createPost } from './modules/commands/posts/application/CreatePost.js';
 import { deletePost } from './modules/commands/posts/application/DeletePost.js';
 import { editPost } from './modules/commands/posts/application/EditPost.js';
@@ -37,6 +43,7 @@ const postReactionRepo = new DrizzlePostReactionRepository();
 const replyRepo = new DrizzleReplyRepository();
 const notificationRepo = new DrizzleNotificationRepository();
 const linkPreviewService = new OpenGraphLinkPreviewService();
+const avatarStorage = new S3AvatarStorage();
 
 export function createUseCases() {
   return {
@@ -54,6 +61,15 @@ export function createUseCases() {
 
     updateDisplayName: (input: Parameters<typeof updateDisplayName>[0]) =>
       updateDisplayName(input, { membershipRepo }),
+
+    createAvatarUploadUrl: (input: Parameters<typeof createAvatarUploadUrl>[0]) =>
+      createAvatarUploadUrl(input, { membershipRepo, avatarStorage }),
+
+    confirmAvatarUpload: (input: Parameters<typeof confirmAvatarUpload>[0]) =>
+      confirmAvatarUpload(input, { membershipRepo, avatarStorage }),
+
+    removeAvatar: (input: Parameters<typeof removeAvatar>[0]) =>
+      removeAvatar(input, { membershipRepo, avatarStorage }),
 
     createPost: (input: Parameters<typeof createPost>[0]) =>
       createPost(input, { postRepo, membershipRepo, linkPreviewService, draftRepo }),

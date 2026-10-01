@@ -10,12 +10,13 @@ import {
   users,
 } from '#/shared/infrastructure/db/schema.js';
 import type { NotificationType, ReactionType } from '#/shared/infrastructure/db/schema.js';
-import { resolveDisplayNames } from '../shared/userIdentity.js';
+import { resolveIdentities } from '../shared/userIdentity.js';
 
 export type NotificationRM = {
   id: string;
   actorId: string;
   actorDisplayName: string;
+  actorAvatarUrl: string | null;
   type: NotificationType;
   reactionType: ReactionType | null;
   postId: string | null;
@@ -59,6 +60,7 @@ export async function getNotifications(
       createdAt: notifications.createdAt,
       seenAt: notifications.seenAt,
       actorDisplayName: memberships.displayName,
+      actorAvatarUrl: memberships.avatarUrl,
       actorEmail: users.email,
     })
     .from(notifications)
@@ -77,11 +79,12 @@ export async function getNotifications(
     )
     .orderBy(desc(notifications.createdAt));
 
-  const displayNameMap = await resolveDisplayNames(
+  const identityMap = await resolveIdentities(
     rows.map((row) => ({
       userId: row.actorId,
       displayName: row.actorDisplayName,
       email: row.actorEmail,
+      avatarUrl: row.actorAvatarUrl,
     })),
   );
 
@@ -91,7 +94,8 @@ export async function getNotifications(
     notifications: rows.map((row) => ({
       id: row.id,
       actorId: row.actorId,
-      actorDisplayName: displayNameMap.get(row.actorId) ?? 'Anonymous',
+      actorDisplayName: identityMap.get(row.actorId)?.displayName ?? 'Anonymous',
+      actorAvatarUrl: identityMap.get(row.actorId)?.avatarUrl ?? null,
       type: row.type,
       reactionType: row.reactionType,
       postId: row.postId,

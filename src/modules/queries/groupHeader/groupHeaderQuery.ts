@@ -1,11 +1,13 @@
 import { and, eq } from 'drizzle-orm';
 import { db } from '#/shared/infrastructure/db/client.js';
 import { groups, memberships } from '#/shared/infrastructure/db/schema.js';
+import { resolveIdentities } from '../shared/userIdentity.js';
 
 export type GroupHeaderRM = {
   id: string;
   name: string;
   displayName: string;
+  avatarUrl: string | null;
 };
 
 export async function getGroupHeader(
@@ -16,10 +18,26 @@ export async function getGroupHeader(
   if (!group) throw new Error('Group not found');
 
   const [membership] = await db
-    .select({ displayName: memberships.displayName })
+    .select({
+      displayName: memberships.displayName,
+      avatarUrl: memberships.avatarUrl,
+    })
     .from(memberships)
     .where(and(eq(memberships.groupId, groupId), eq(memberships.userId, userId)))
     .limit(1);
 
-  return { id: group.id, name: group.name, displayName: membership?.displayName ?? '' };
+  const identityMap = await resolveIdentities([
+    {
+      userId,
+      displayName: membership?.displayName,
+      avatarUrl: membership?.avatarUrl,
+    },
+  ]);
+
+  return {
+    id: group.id,
+    name: group.name,
+    displayName: membership?.displayName ?? '',
+    avatarUrl: identityMap.get(userId)?.avatarUrl ?? null,
+  };
 }

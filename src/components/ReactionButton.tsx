@@ -6,6 +6,7 @@ import { Tooltip } from '#/shared/ui/Tooltip.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
 import { listPostReactorsFn } from '#/modules/queries/reactors/reactors.functions.js';
 import { ReactorsModal } from './ReactorsModal.js';
+import { Avatar } from './Avatar.js';
 
 export function ReactionButton({
   postId,
@@ -51,7 +52,10 @@ export function ReactionButton({
     return (
       <span className="flex flex-col gap-0.5">
         {data.map((reactor) => (
-          <span key={reactor.userId}>{reactor.displayName}</span>
+          <span key={reactor.userId} className="flex items-center gap-1.5">
+            <Avatar src={reactor.avatarUrl} name={reactor.displayName} size="xs" />
+            <span>{reactor.displayName}</span>
+          </span>
         ))}
       </span>
     );

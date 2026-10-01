@@ -66,8 +66,10 @@ src/
   No domain entities, no repositories, no `Result`, no writes.
 - Queries may join freely across tables — that is the point.
 - Display names are resolved by `queries/shared/userIdentity.ts` using the chain
-  `membership.displayName -> Clerk username -> email -> 'Anonymous'`. The Clerk lookup is
-  batched (`getUserList`) and never written back to the database.
+  `membership.displayName -> Clerk username -> email -> 'Anonymous'`. Avatars are resolved by the
+  same resolver with the chain `membership.avatarUrl -> Clerk imageUrl -> local initials` (the
+  initials fallback is rendered by the `Avatar` component). The Clerk lookup is batched
+  (`getUserList`) and never written back to the database.
 
 ### Write side (`modules/commands`)
 
@@ -96,6 +98,11 @@ Copy `.env.example` to `.env` and fill in the values.
 | `DATABASE_URL` | server | Pooled Postgres connection string (Neon `-pooler` or local Postgres) |
 | `DATABASE_URL_UNPOOLED` | server | Direct Postgres connection string for migrations |
 | `CLERK_SECRET_KEY` | server | Clerk secret key |
+| `AWS_ENDPOINT_URL_S3` | server | Neon Object Storage endpoint for the branch (from `neon env pull` or the Neon API) |
+| `AWS_ACCESS_KEY_ID` | server | Neon storage credential token id (`nak_...`) |
+| `AWS_SECRET_ACCESS_KEY` | server | Neon storage credential secret (`nsk_...`) |
+| `AWS_REGION` | server | Region of the Neon branch (e.g. `eu-central-1`) |
+| `S3_AVATAR_BUCKET` | server | Bucket that stores avatars (created with the `public_read` access level) |
 | `VITE_CLERK_PUBLISHABLE_KEY` | client | Clerk publishable key |
 | `VITE_CLERK_SIGN_IN_URL` | client | `/sign-in` |
 | `VITE_CLERK_SIGN_UP_URL` | client | `/sign-up` |
@@ -103,6 +110,33 @@ Copy `.env.example` to `.env` and fill in the values.
 | `VITE_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | client | `/` |
 
 T3 Env validates all variables at build and runtime.
+
+### Avatars (Neon Object Storage)
+
+Custom avatars are per-membership and delivered from a `public_read` bucket:
+
+1. Create a bucket (default name `avatars`, configurable via `S3_AVATAR_BUCKET`) on the Neon
+   branch and set its access level to `public_read`.
+2. Create a storage credential with `storage:read` and `storage:write` scopes and set the `AWS_*`
+   variables from it.
+3. Add a CORS rule so browsers can upload directly to the bucket with presigned URLs:
+
+```json
+[
+  {
+    "AllowedHeaders": ["Content-Type"],
+    "AllowedMethods": ["GET", "PUT"],
+    "AllowedOrigins": ["http://localhost:3000", "https://your-app.vercel.app"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+Uploads work in two phases: the server presigns a PUT for a per-membership key, the client
+re-encodes the image to at most 512px WebP (JPEG fallback) and uploads it directly to the
+bucket, then the server verifies the object (key prefix, content type, size) before storing the
+public URL on the membership. Failed verifications roll the object back, and replaced or removed
+photos are deleted best-effort.
 
 ## Development
 
