@@ -3,7 +3,6 @@ import type { DomainError } from '#/shared/kernel/DomainError.js';
 import { ValidationError } from '#/shared/kernel/DomainError.js';
 
 import {
-  ExpiredInviteError,
   GroupNotFoundError,
   InviteNotFoundError,
 } from '../domain/errors.js';
@@ -48,7 +47,7 @@ export async function joinGroupWithInvite(
   if (!invite) return err(new InviteNotFoundError());
 
   const valid = invite.validate();
-  if (!valid.ok) return err(new ExpiredInviteError());
+  if (!valid.ok) return err(valid.error);
 
   const group = await deps.groupRepo.findById(invite.groupId);
   if (!group) return err(new GroupNotFoundError());

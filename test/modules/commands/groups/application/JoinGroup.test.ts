@@ -32,6 +32,13 @@ class InMemoryInviteRepository implements InviteRepository {
     return null;
   }
 
+  async findByGroupId(groupId: string): Promise<Invite | null> {
+    for (const invite of this.invites.values()) {
+      if (invite.groupId === groupId) return invite;
+    }
+    return null;
+  }
+
   add(invite: Invite): void {
     this.invites.set(invite.id, invite);
   }
@@ -146,7 +153,7 @@ describe('JoinGroup', () => {
     expect(result.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('returns ExpiredInviteError for an expired invite', async () => {
+  it('allows joining with an invite whose stored expiry is in the past', async () => {
     const deps = createDeps();
     const group = Group.create({ name: 'Movie Buffs', createdById: 'usr_1' });
     expect(group.ok).toBe(true);
@@ -170,8 +177,6 @@ describe('JoinGroup', () => {
       deps,
     );
 
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.error.code).toBe('EXPIRED_INVITE');
+    expect(result.ok).toBe(true);
   });
 });

@@ -21,8 +21,4 @@ export class Group {
   static reconstitute(input: { id: string; name: string; createdById: string; createdAt: Date }): Group {
     return new Group(input.id, input.name, input.createdById, input.createdAt);
   }
-
-  isManagedBy(userId: string): boolean {
-    return this.createdById === userId;
-  }
 }

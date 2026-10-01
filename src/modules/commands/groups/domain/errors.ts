@@ -14,10 +14,10 @@ export class InviteNotFoundError extends DomainError {
   }
 }
 
-export class ExpiredInviteError extends DomainError {
-  readonly code = 'EXPIRED_INVITE';
+export class InviteExhaustedError extends DomainError {
+  readonly code = 'INVITE_EXHAUSTED';
   constructor() {
-    super('Invite has expired');
+    super('Invite can no longer be used');
   }
 }
 
@@ -32,12 +32,5 @@ export class NotGroupMemberError extends DomainError {
   readonly code = 'NOT_GROUP_MEMBER';
   constructor() {
     super('You are not a member of this group');
-  }
-}
-
-export class UnauthorizedToManageGroupError extends DomainError {
-  readonly code = 'UNAUTHORIZED_TO_MANAGE_GROUP';
-  constructor() {
-    super('Only the group owner can manage invites');
   }
 }

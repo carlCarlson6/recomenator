@@ -47,7 +47,7 @@ async function seed() {
     id: 'inv_seed_invite',
     code: 'seedseedseedseedseedseedseedseed',
     groupId: group.id,
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    expiresAt: null,
     createdById: ownerId,
   }).onConflictDoNothing();
 

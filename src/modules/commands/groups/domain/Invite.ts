@@ -3,19 +3,17 @@ import { customAlphabet } from 'nanoid';
 import { createId } from '#/shared/kernel/idGenerator.js';
 import { err, ok, type Result } from '#/shared/kernel/Result.js';
 
-import { ExpiredInviteError } from './errors.js';
+import { InviteExhaustedError } from './errors.js';
 
 const codeAlphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
 const generateCode = customAlphabet(codeAlphabet, 32);
-
-const INVITE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export class Invite {
   private constructor(
     readonly id: string,
     readonly code: string,
     readonly groupId: string,
-    readonly expiresAt: Date,
+    readonly expiresAt: Date | null,
     readonly usageCount: number,
     readonly maxUses: number | null,
     readonly createdById: string,
@@ -31,7 +29,7 @@ export class Invite {
       createId('inv'),
       generateCode(),
       input.groupId,
-      new Date(Date.now() + INVITE_TTL_MS),
+      null,
       0,
       input.maxUses ?? null,
       input.createdById,
@@ -43,7 +41,7 @@ export class Invite {
     id: string;
     code: string;
     groupId: string;
-    expiresAt: Date;
+    expiresAt: Date | null;
     usageCount: number;
     maxUses: number | null;
     createdById: string;
@@ -61,12 +59,9 @@ export class Invite {
     );
   }
 
-  validate(): Result<void, ExpiredInviteError> {
-    if (this.expiresAt <= new Date()) {
-      return err(new ExpiredInviteError());
-    }
+  validate(): Result<void, InviteExhaustedError> {
     if (this.maxUses !== null && this.usageCount >= this.maxUses) {
-      return err(new ExpiredInviteError());
+      return err(new InviteExhaustedError());
     }
     return ok(undefined);
   }

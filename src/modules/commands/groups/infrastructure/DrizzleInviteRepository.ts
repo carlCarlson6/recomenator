@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 
 import { db } from '#/shared/infrastructure/db/client.js';
 import { invites } from '#/shared/infrastructure/db/schema.js';
@@ -9,6 +9,16 @@ import type { InviteRepository } from '../domain/ports/InviteRepository.js';
 export class DrizzleInviteRepository implements InviteRepository {
   async findByCode(code: string): Promise<Invite | null> {
     const [row] = await db.select().from(invites).where(eq(invites.code, code)).limit(1);
+    return row ? Invite.reconstitute(row) : null;
+  }
+
+  async findByGroupId(groupId: string): Promise<Invite | null> {
+    const [row] = await db
+      .select()
+      .from(invites)
+      .where(eq(invites.groupId, groupId))
+      .orderBy(asc(invites.createdAt), asc(invites.id))
+      .limit(1);
     return row ? Invite.reconstitute(row) : null;
   }
 
