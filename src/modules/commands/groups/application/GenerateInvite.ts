@@ -16,7 +16,7 @@ export type InviteDto = {
   id: string;
   code: string;
   groupId: string;
-  expiresAt: Date | null;
+  expiresAt: Date;
   usageCount: number;
   maxUses: number | null;
 };

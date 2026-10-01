@@ -44,8 +44,9 @@ export const invites = pgTable(
     groupId: text('group_id')
       .references(() => groups.id, { onDelete: 'cascade' })
       .notNull(),
-    // Legacy column: kept for old rows, but never enforced. New invites store null.
-    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }),
+    // Legacy column kept for backwards compatibility. Invites never expire and
+    // this value is never enforced; it is still written on create.
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
     usageCount: integer('usage_count').notNull().default(0),
     maxUses: integer('max_uses'),
     createdById: text('created_by_id')
