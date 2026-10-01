@@ -119,7 +119,8 @@ Custom avatars are per-membership and delivered from a `public_read` bucket:
    branch and set its access level to `public_read`.
 2. Create a storage credential with `storage:read` and `storage:write` scopes and set the `AWS_*`
    variables from it.
-3. Add a CORS rule so browsers can upload directly to the bucket with presigned URLs:
+3. Configure CORS so browsers can upload directly to the bucket with presigned URLs. Set
+   `AVATAR_CORS_ORIGINS` (comma separated) and run `npm run storage:cors`, which applies this rule:
 
 ```json
 [
@@ -131,6 +132,10 @@ Custom avatars are per-membership and delivered from a `public_read` bucket:
   }
 ]
 ```
+
+   The script replaces the bucket's CORS rules, so include every origin that needs access (the
+   production domain and, if you want preview deploys to upload, a `https://*.vercel.app`
+   wildcard).
 
 Uploads work in two phases: the server presigns a PUT for a per-membership key, the client
 re-encodes the image to at most 512px WebP (JPEG fallback) and uploads it directly to the
@@ -188,6 +193,7 @@ npm test
 | `npm run db:migrate` | Run Drizzle migrations |
 | `npm run db:seed` | Seed local database |
 | `npm run db:reset` | Stop, start, migrate, and seed local database |
+| `npm run storage:cors` | Apply the avatar bucket CORS rule from `AVATAR_CORS_ORIGINS` |
 | `npm test` | Run Vitest |
 
 ## Conventions
