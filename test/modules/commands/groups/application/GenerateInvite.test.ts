@@ -101,7 +101,6 @@ describe('GenerateInvite', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.groupId).toBe(group.id);
-    expect(result.value.expiresAt).toBeNull();
     expect(deps.inviteRepo.count()).toBe(1);
   });
 

@@ -8,12 +8,15 @@ import { InviteExhaustedError } from './errors.js';
 const codeAlphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
 const generateCode = customAlphabet(codeAlphabet, 32);
 
+// Legacy value written to expires_at for backwards compatibility; never enforced.
+const INVITE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
 export class Invite {
   private constructor(
     readonly id: string,
     readonly code: string,
     readonly groupId: string,
-    readonly expiresAt: Date | null,
+    readonly expiresAt: Date,
     readonly usageCount: number,
     readonly maxUses: number | null,
     readonly createdById: string,
@@ -29,7 +32,7 @@ export class Invite {
       createId('inv'),
       generateCode(),
       input.groupId,
-      null,
+      new Date(Date.now() + INVITE_TTL_MS),
       0,
       input.maxUses ?? null,
       input.createdById,
@@ -41,7 +44,7 @@ export class Invite {
     id: string;
     code: string;
     groupId: string;
-    expiresAt: Date | null;
+    expiresAt: Date;
     usageCount: number;
     maxUses: number | null;
     createdById: string;
