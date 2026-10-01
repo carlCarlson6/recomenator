@@ -7,7 +7,6 @@ import {
   prioritizeLastVisited,
   readLastVisitedGroupId,
 } from '#/shared/browser/lastVisitedGroup.js'
-import { Avatar } from '#/components/Avatar.js'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -73,20 +72,17 @@ function Home() {
                     params={{ groupId: group.id }}
                     className="flex items-center justify-between rounded-md border border-border p-3 hover:bg-muted"
                   >
-                    <div className="flex items-center gap-3">
-                      <Avatar src={group.avatarUrl} name={group.displayName} size="md" />
-                      <div>
-                        <div className="font-medium">
-                          {group.name}
-                          {group.id === lastVisitedGroupId && (
-                            <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
-                              Jump back in
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          You are {group.displayName}
-                        </div>
+                    <div>
+                      <div className="font-medium">
+                        {group.name}
+                        {group.id === lastVisitedGroupId && (
+                          <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                            Jump back in
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        You are {group.displayName}
                       </div>
                     </div>
                     {group.unreadCount > 0 && (
