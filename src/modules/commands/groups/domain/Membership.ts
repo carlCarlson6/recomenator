@@ -4,6 +4,17 @@ import { ValidationError } from '#/shared/kernel/DomainError.js';
 
 import type { Role } from '#/shared/infrastructure/db/schema.js';
 
+const MAX_AVATAR_URL_LENGTH = 2048;
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export class Membership {
   private constructor(
     readonly id: string,
@@ -11,6 +22,7 @@ export class Membership {
     readonly groupId: string,
     readonly displayName: string,
     readonly role: Role,
+    readonly avatarUrl: string | null,
     readonly createdAt: Date,
   ) {}
 
@@ -19,6 +31,7 @@ export class Membership {
     groupId: string;
     displayName: string;
     role?: Role;
+    avatarUrl?: string | null;
   }): Result<Membership, ValidationError> {
     const trimmed = input.displayName.trim();
     if (trimmed.length === 0 || trimmed.length > 50) {
@@ -31,6 +44,7 @@ export class Membership {
         input.groupId,
         trimmed,
         input.role ?? 'member',
+        input.avatarUrl ?? null,
         new Date(),
       ),
     );
@@ -42,6 +56,7 @@ export class Membership {
     groupId: string;
     displayName: string;
     role: Role;
+    avatarUrl?: string | null;
     createdAt: Date;
   }): Membership {
     return new Membership(
@@ -50,6 +65,7 @@ export class Membership {
       input.groupId,
       input.displayName,
       input.role,
+      input.avatarUrl ?? null,
       input.createdAt,
     );
   }
@@ -66,6 +82,40 @@ export class Membership {
         this.groupId,
         trimmed,
         this.role,
+        this.avatarUrl,
+        this.createdAt,
+      ),
+    );
+  }
+
+  updateAvatarUrl(avatarUrl: string | null): Result<Membership, ValidationError> {
+    if (avatarUrl === null) {
+      return ok(
+        new Membership(
+          this.id,
+          this.userId,
+          this.groupId,
+          this.displayName,
+          this.role,
+          null,
+          this.createdAt,
+        ),
+      );
+    }
+
+    const trimmed = avatarUrl.trim();
+    if (trimmed.length === 0 || trimmed.length > MAX_AVATAR_URL_LENGTH || !isHttpUrl(trimmed)) {
+      return err(new ValidationError('Avatar URL must be a valid http(s) URL'));
+    }
+
+    return ok(
+      new Membership(
+        this.id,
+        this.userId,
+        this.groupId,
+        this.displayName,
+        this.role,
+        trimmed,
         this.createdAt,
       ),
     );

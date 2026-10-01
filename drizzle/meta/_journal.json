@@ -43,6 +43,13 @@
       "when": 1790708425964,
       "tag": "0005_romantic_kulan_gath",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790882282707,
+      "tag": "0006_pink_dorian_gray",
+      "breakpoints": true
     }
   ]
 }

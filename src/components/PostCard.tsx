@@ -12,6 +12,7 @@ import {
   removePostReactionFn,
 } from '#/modules/commands/posts/adapters/posts.functions.js';
 import { ReactionButton } from './ReactionButton.js';
+import { Avatar } from './Avatar.js';
 
 const REACTION_CONFIG: Array<{
   type: ReactionType;
@@ -94,7 +95,10 @@ export function PostCard({
 
       <h3 className="mt-1 text-lg font-semibold">{post.title}</h3>
 
-      <p className="mt-1 text-xs text-muted-foreground">by {post.authorDisplayName}</p>
+      <div className="mt-1 flex items-center gap-2">
+        <Avatar src={post.authorAvatarUrl} name={post.authorDisplayName} size="sm" />
+        <p className="text-xs text-muted-foreground">by {post.authorDisplayName}</p>
+      </div>
 
       {post.description && (
         <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">

@@ -34,3 +34,24 @@ export class NotGroupMemberError extends DomainError {
     super('You are not a member of this group');
   }
 }
+
+export class UnsupportedAvatarTypeError extends DomainError {
+  readonly code = 'UNSUPPORTED_AVATAR_TYPE';
+  constructor() {
+    super('Avatars must be a JPEG, PNG, WebP, or AVIF image');
+  }
+}
+
+export class AvatarUploadVerificationError extends DomainError {
+  readonly code = 'AVATAR_UPLOAD_VERIFICATION_FAILED';
+  constructor(message = 'The uploaded avatar could not be verified') {
+    super(message);
+  }
+}
+
+export class AvatarStorageError extends DomainError {
+  readonly code = 'AVATAR_STORAGE_ERROR';
+  constructor(message = 'Avatar storage is unavailable') {
+    super(message);
+  }
+}

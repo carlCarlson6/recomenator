@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { BottomSheet } from '#/shared/ui/BottomSheet.js';
 import type { ReactionType } from '#/shared/infrastructure/db/schema.js';
 import { listPostReactorsFn } from '#/modules/queries/reactors/reactors.functions.js';
+import { Avatar } from './Avatar.js';
 
 const TYPE_TITLES: Record<ReactionType, string> = {
   interested: 'Interested',
@@ -44,7 +45,8 @@ export function ReactorsModal({
       ) : (
         <ul className="space-y-2">
           {data.map((reactor) => (
-            <li key={reactor.userId} className="font-medium text-foreground">
+            <li key={reactor.userId} className="flex items-center gap-2 font-medium text-foreground">
+              <Avatar src={reactor.avatarUrl} name={reactor.displayName} size="sm" />
               {reactor.displayName}
             </li>
           ))}

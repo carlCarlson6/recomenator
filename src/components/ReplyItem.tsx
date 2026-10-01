@@ -5,6 +5,7 @@ import { deleteReplyFn } from '#/modules/commands/posts/replies/adapters/replies
 import type { ReplyNodeDto } from '#/modules/queries/postDetail/postDetailQuery.js';
 
 import { ReplyForm } from './ReplyForm.js';
+import { Avatar } from './Avatar.js';
 
 const MAX_VISUAL_DEPTH = 6;
 
@@ -37,9 +38,14 @@ export function ReplyItem({
     <div>
       <div className="rounded-md border border-border p-3">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-xs font-medium text-primary">
-            {isDeleted ? '[deleted]' : reply.authorDisplayName}
-          </p>
+          <div className="flex items-center gap-2">
+            {!isDeleted && (
+              <Avatar src={reply.authorAvatarUrl} name={reply.authorDisplayName} size="xs" />
+            )}
+            <p className="text-xs font-medium text-primary">
+              {isDeleted ? '[deleted]' : reply.authorDisplayName}
+            </p>
+          </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>{reply.createdAt.toLocaleString()}</span>
             {reply.children.length > 0 && (
