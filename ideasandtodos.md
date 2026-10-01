@@ -1,4 +1,3 @@
-- notifications te see if someone has replied or reacted to your post
 - update profile image
 - update your own post
 - review initial app flow, redirect to group, make group default
