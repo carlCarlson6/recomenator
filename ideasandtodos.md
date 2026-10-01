@@ -1,3 +1,0 @@
-- update profile image
-- browse recomendations not only by category, also by user
-- mobile app
