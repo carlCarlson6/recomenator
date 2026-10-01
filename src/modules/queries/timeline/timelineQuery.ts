@@ -15,6 +15,7 @@ export async function getTimeline(
   groupId: string,
   userId: string,
   category?: Category,
+  authorId?: string,
 ): Promise<TimelineRM> {
   const [membership] = await db
     .select()
@@ -52,6 +53,7 @@ export async function getTimeline(
       and(
         eq(posts.groupId, groupId),
         category ? eq(posts.category, category) : undefined,
+        authorId ? eq(posts.authorId, authorId) : undefined,
       ),
     )
     .orderBy(desc(posts.createdAt));

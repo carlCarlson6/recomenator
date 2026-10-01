@@ -9,7 +9,7 @@ A private group app for friends to share recommendations about video games, movi
 - Other users join groups only via an invitation link.
 - Members post recommendations under a fixed category with an optional description and external link. Authors can edit their own recommendations, and link previews refresh when the link changes.
 - The app fetches link previews (Open Graph, YouTube, Spotify embeds) when a post is created.
-- Members see a reverse-chronological timeline of group recommendations and filter by category.
+- Members see a reverse-chronological timeline of group recommendations and filter by category and author.
 - Members reply to posts to start discussions, with Reddit-style nested reply threads (reply to any reply, collapsible threads, soft-deleted replies keep their children).
 - Each group has a notification center that records interactions (reactions or replies) on a member's own recommendations, with an unseen counter that clears when the notifications page is opened.
 
@@ -59,7 +59,7 @@ src/
 ### Read side (`modules/queries`)
 
 - One folder per **read model**, defined by what a view needs (`timeline`, `interactions`,
-  `postDetail`, `home`, `reactors`, `notifications`, `invite`, `drafts`, `groupHeader`).
+  `postDetail`, `home`, `reactors`, `notifications`, `invite`, `drafts`, `groupHeader`, `members`).
 - Shared read shapes live in `queries/shared`. `PostCardRM` is shared by timeline,
   interactions, and post detail because those views reuse the same `PostCard` UI.
 - Queries are **thin**: one `db.select()` (or a few parallel selects) that returns a plain DTO.
