@@ -37,6 +37,33 @@ export const createPostFn = createServerFn({ method: 'POST' })
     );
   });
 
+const editPostSchema = z.object({
+  postId: z.string().min(1),
+  category: z.enum(['VIDEO_GAMES', 'MOVIES', 'SHOWS', 'MUSIC', 'BOOKS', 'MISC']),
+  title: z.string().min(1).max(200).trim(),
+  description: z.string().max(2000).trim().optional(),
+  externalUrl: z.string().url().optional(),
+  rating: z.number().int().min(1).max(10).optional(),
+});
+
+export const editPostFn = createServerFn({ method: 'POST' })
+  .middleware([protectedMiddleware])
+  .validator(editPostSchema)
+  .handler(async ({ data, context }) => {
+    const { editPost } = createUseCases();
+    return unwrapResult(
+      await editPost({
+        postId: data.postId,
+        userId: context.userId,
+        category: data.category as Category,
+        title: data.title,
+        description: data.description,
+        externalUrl: data.externalUrl,
+        rating: data.rating,
+      }),
+    );
+  });
+
 const saveDraftSchema = z.object({
   draftId: z.string().min(1).optional(),
   groupId: z.string().min(1),

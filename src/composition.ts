@@ -9,6 +9,7 @@ import { DrizzleInviteRepository } from './modules/commands/groups/infrastructur
 import { DrizzleMembershipRepository } from './modules/commands/groups/infrastructure/DrizzleMembershipRepository.js';
 import { createPost } from './modules/commands/posts/application/CreatePost.js';
 import { deletePost } from './modules/commands/posts/application/DeletePost.js';
+import { editPost } from './modules/commands/posts/application/EditPost.js';
 import {
   addPostReaction,
   removePostReaction,
@@ -59,6 +60,9 @@ export function createUseCases() {
 
     deletePost: (input: Parameters<typeof deletePost>[0]) =>
       deletePost(input, { postRepo }),
+
+    editPost: (input: Parameters<typeof editPost>[0]) =>
+      editPost(input, { postRepo, linkPreviewService }),
 
     saveDraft: (input: Parameters<typeof saveDraft>[0]) =>
       saveDraft(input, { draftRepo, membershipRepo }),
