@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, Outlet, createFileRoute, useLocation, useParams } from '@tanstack/react-router'
 import { Bell, HandHeart, Home, Plus, Settings } from 'lucide-react'
+import { useEffect } from 'react'
 
 import { getUnreadNotificationCountFn } from '#/modules/queries/notifications/notifications.functions.js'
+import { rememberLastVisitedGroup } from '#/shared/browser/lastVisitedGroup.js'
 import { BottomBar, BottomBarItem } from '#/shared/ui/BottomBar.js'
 
 export const Route = createFileRoute('/groups/$groupId')({
@@ -12,6 +14,10 @@ export const Route = createFileRoute('/groups/$groupId')({
 function GroupLayout() {
   const { groupId } = useParams({ from: '/groups/$groupId' })
   const location = useLocation()
+
+  useEffect(() => {
+    rememberLastVisitedGroup(groupId)
+  }, [groupId])
 
   const { data: unreadCount = 0 } = useQuery({
     queryKey: ['groups', groupId, 'notifications', 'unreadCount'],
@@ -27,11 +33,10 @@ function GroupLayout() {
       {!hideBar && (
         <BottomBar>
           <Link
-            to="/groups/$groupId"
-            params={{ groupId }}
+            to="/"
             className="flex-1"
           >
-            <BottomBarItem active={location.pathname === `/groups/${groupId}`}>
+            <BottomBarItem>
               <Home className="h-5 w-5" />
               <span>Home</span>
             </BottomBarItem>

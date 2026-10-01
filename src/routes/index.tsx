@@ -1,7 +1,12 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
-import { Link, createFileRoute, redirect } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 
 import { getHomeDataFn } from '#/modules/queries/home/home.functions.js'
+import {
+  prioritizeLastVisited,
+  readLastVisitedGroupId,
+} from '#/shared/browser/lastVisitedGroup.js'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -10,22 +15,19 @@ export const Route = createFileRoute('/')({
       return { groups: [] }
     }
 
-    const groups = await getHomeDataFn()
-
-    if (groups.length === 1) {
-      throw redirect({
-        to: '/groups/$groupId',
-        params: { groupId: groups[0].id },
-        throw: true,
-      })
-    }
-
-    return { groups }
+    return { groups: await getHomeDataFn() }
   },
 })
 
 function Home() {
   const { groups } = Route.useLoaderData()
+  const [lastVisitedGroupId, setLastVisitedGroupId] = useState<string | null>(null)
+
+  useEffect(() => {
+    setLastVisitedGroupId(readLastVisitedGroupId())
+  }, [])
+
+  const orderedGroups = prioritizeLastVisited(groups, lastVisitedGroupId)
 
   return (
     <main className="mx-auto max-w-xl px-4 py-12">
@@ -63,7 +65,7 @@ function Home() {
             <p className="mt-4 text-muted-foreground">No groups yet.</p>
           ) : (
             <ul className="mt-4 space-y-2">
-              {groups.map((group) => (
+              {orderedGroups.map((group) => (
                 <li key={group.id}>
                   <Link
                     to="/groups/$groupId"
@@ -71,7 +73,14 @@ function Home() {
                     className="flex items-center justify-between rounded-md border border-border p-3 hover:bg-muted"
                   >
                     <div>
-                      <div className="font-medium">{group.name}</div>
+                      <div className="font-medium">
+                        {group.name}
+                        {group.id === lastVisitedGroupId && (
+                          <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                            Jump back in
+                          </span>
+                        )}
+                      </div>
                       <div className="text-sm text-muted-foreground">
                         You are {group.displayName}
                       </div>
