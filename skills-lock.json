@@ -13,12 +13,6 @@
       "skillPath": "skills/frameworks/clerk-tanstack-patterns/SKILL.md",
       "computedHash": "dae6b1764f59c280cc257fc114ff3d2acc186d27537875e3c461650b7addb85d"
     },
-    "ddd": {
-      "source": "codewithmukesh/dotnet-claude-kit",
-      "sourceType": "github",
-      "skillPath": "skills/ddd/SKILL.md",
-      "computedHash": "fc711c63d0d4c93d752bb52b9bb48c328b9af08087cc4746ac2f55dcf77a1d92"
-    },
     "documentation-and-adrs": {
       "source": "addyosmani/agent-skills",
       "sourceType": "github",
@@ -30,12 +24,6 @@
       "sourceType": "github",
       "skillPath": ".agents/skills/drizzle/SKILL.md",
       "computedHash": "df157c1768fee04925ae789f67120c80c7896c3a121a30076dfdba4ce51908ab"
-    },
-    "hexagonal-architecture": {
-      "source": "affaan-m/ecc",
-      "sourceType": "github",
-      "skillPath": "skills/hexagonal-architecture/SKILL.md",
-      "computedHash": "9bcc7b90143ab607eb6dbac67df028c9d8c7303e787395da5b2ef311f52e55eb"
     },
     "neon-postgres": {
       "source": "neondatabase/agent-skills",
@@ -54,12 +42,6 @@
       "sourceType": "github",
       "skillPath": "skills/tanstack-query/SKILL.md",
       "computedHash": "8e5a7e3cdc6900c3967945658aa277629ba7b5264ddadc017ee2b76359456719"
-    },
-    "tanstack-start": {
-      "source": "tanstack-skills/tanstack-skills",
-      "sourceType": "github",
-      "skillPath": "plugins/tanstack-start/skills/tanstack-start/SKILL.md",
-      "computedHash": "e9d8355fe3e47b118e739081f1123c52aa0ecde57da840722177e1ad5caf9908"
     },
     "tanstack-start-best-practices": {
       "source": "deckardger/tanstack-agent-skills",
@@ -84,12 +66,6 @@
       "sourceType": "github",
       "skillPath": "skills/react-best-practices/SKILL.md",
       "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
-    },
-    "vertical-slice": {
-      "source": "codewithmukesh/dotnet-claude-kit",
-      "sourceType": "github",
-      "skillPath": "skills/vertical-slice/SKILL.md",
-      "computedHash": "90b4ba579be9a2e193295ca4fffb3f77a019bd6dae6b2051027c6b3a344f0249"
     }
   }
 }
