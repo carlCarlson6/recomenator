@@ -2,7 +2,7 @@ import { useNavigate, createFileRoute, useParams } from '@tanstack/react-router'
 import { ArrowLeft, Users } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 
-import { CreatePostForm } from '#/components/CreatePostForm.js';
+import { PostForm } from '#/components/PostForm.js';
 
 export const Route = createFileRoute('/groups/$groupId/posts/new')({
   component: NewPostPage,
@@ -36,7 +36,7 @@ function NewPostPage() {
       <h1 className="mt-6 text-2xl font-bold">Add recommendation</h1>
 
       <div className="mt-6">
-        <CreatePostForm
+        <PostForm
           groupId={groupId}
           onSuccess={() => navigate({ to: '/groups/$groupId', params: { groupId } })}
         />

@@ -5,10 +5,12 @@ import { Trash2, X } from 'lucide-react';
 import {
   createPostFn,
   deleteDraftFn,
+  editPostFn,
   saveDraftFn,
 } from '#/modules/commands/posts/adapters/posts.functions.js';
 import { listDraftsFn } from '#/modules/queries/drafts/drafts.functions.js';
 import type { DraftListRM } from '#/modules/queries/drafts/draftsQuery.js';
+import type { PostCardRM } from '#/modules/queries/shared/postCardQuery.js';
 import type { Category } from '#/shared/infrastructure/db/schema.js';
 
 const categories: { value: Category; label: string }[] = [
@@ -29,24 +31,35 @@ const categoryLabels: Record<Category, string> = {
   MISC: 'Miscellaneous',
 };
 
-export function CreatePostForm({
+export type EditablePost = Pick<
+  PostCardRM,
+  'id' | 'category' | 'title' | 'description' | 'externalUrl' | 'rating'
+>;
+
+export function PostForm({
   groupId,
+  post,
   onSuccess,
+  onCancel,
 }: {
   groupId: string;
+  post?: EditablePost;
   onSuccess?: () => void;
+  onCancel?: () => void;
 }) {
   const queryClient = useQueryClient();
+  const isEdit = post !== undefined;
   const [draftId, setDraftId] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [externalUrl, setExternalUrl] = useState('');
-  const [category, setCategory] = useState<Category>('MISC');
-  const [rating, setRating] = useState<number | ''>('');
+  const [title, setTitle] = useState(post?.title ?? '');
+  const [description, setDescription] = useState(post?.description ?? '');
+  const [externalUrl, setExternalUrl] = useState(post?.externalUrl ?? '');
+  const [category, setCategory] = useState<Category>(post?.category ?? 'MISC');
+  const [rating, setRating] = useState<number | ''>(post?.rating ?? '');
 
   const draftsQuery = useQuery({
     queryKey: ['groups', groupId, 'drafts'],
     queryFn: () => listDraftsFn({ data: { groupId } }),
+    enabled: !isEdit,
   });
 
   const createPost = useMutation({
@@ -55,6 +68,19 @@ export function CreatePostForm({
       queryClient.invalidateQueries({ queryKey: ['groups', groupId, 'timeline'] });
       queryClient.invalidateQueries({ queryKey: ['groups', groupId, 'drafts'] });
       clearForm();
+      onSuccess?.();
+    },
+  });
+
+  const editPost = useMutation({
+    mutationFn: editPostFn,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups', groupId, 'timeline'] });
+      queryClient.invalidateQueries({ queryKey: ['groups', groupId, 'interactions'] });
+      if (post) {
+        queryClient.invalidateQueries({ queryKey: ['posts', post.id] });
+      }
+      queryClient.invalidateQueries({ queryKey: ['home'] });
       onSuccess?.();
     },
   });
@@ -97,14 +123,23 @@ export function CreatePostForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const fields = {
+      category,
+      title,
+      description: description || undefined,
+      externalUrl: externalUrl || undefined,
+      rating: rating === '' ? undefined : rating,
+    };
+
+    if (post) {
+      editPost.mutate({ data: { postId: post.id, ...fields } });
+      return;
+    }
+
     createPost.mutate({
       data: {
         groupId,
-        title,
-        description: description || undefined,
-        externalUrl: externalUrl || undefined,
-        category,
-        rating: rating === '' ? undefined : rating,
+        ...fields,
         draftId: draftId ?? undefined,
       },
     });
@@ -128,13 +163,13 @@ export function CreatePostForm({
     deleteDraft.mutate({ data: { draftId: id } });
   };
 
-  const isPending = createPost.isPending || saveDraft.isPending;
-  const error = createPost.error ?? saveDraft.error ?? deleteDraft.error;
+  const isPending = createPost.isPending || editPost.isPending || saveDraft.isPending;
+  const error = createPost.error ?? editPost.error ?? saveDraft.error ?? deleteDraft.error;
 
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="space-y-4 rounded-md border border-border p-4">
-        {draftId && (
+        {!isEdit && draftId && (
           <div className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
             <span className="text-muted-foreground">Editing a draft</span>
             <button
@@ -233,71 +268,91 @@ export function CreatePostForm({
         )}
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            disabled={isPending}
-            className="rounded-md border border-border px-4 py-2 text-foreground disabled:opacity-50"
-          >
-            {saveDraft.isPending ? 'Saving...' : 'Save as draft'}
-          </button>
+          {!isEdit && (
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={isPending}
+              className="rounded-md border border-border px-4 py-2 text-foreground disabled:opacity-50"
+            >
+              {saveDraft.isPending ? 'Saving...' : 'Save as draft'}
+            </button>
+          )}
 
           <button
             type="submit"
             disabled={isPending || !title.trim()}
             className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
           >
-            {createPost.isPending ? 'Posting...' : 'Post recommendation'}
+            {isEdit
+              ? editPost.isPending
+                ? 'Saving...'
+                : 'Save changes'
+              : createPost.isPending
+                ? 'Posting...'
+                : 'Post recommendation'}
           </button>
+
+          {isEdit && onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="rounded-md border border-border px-4 py-2 text-foreground"
+            >
+              Cancel
+            </button>
+          )}
         </div>
       </form>
 
-      <section>
-        <h2 className="text-lg font-semibold">Your drafts</h2>
+      {!isEdit && (
+        <section>
+          <h2 className="text-lg font-semibold">Your drafts</h2>
 
-        {draftsQuery.isLoading ? (
-          <p className="mt-2 text-sm text-muted-foreground">Loading drafts...</p>
-        ) : draftsQuery.error ? (
-          <p className="mt-2 text-sm text-red-600">Failed to load drafts</p>
-        ) : draftsQuery.data && draftsQuery.data.length > 0 ? (
-          <ul className="mt-3 space-y-2">
-            {draftsQuery.data.map((draft) => (
-              <li
-                key={draft.id}
-                className={`flex items-center justify-between rounded-md border p-3 ${
-                  draft.id === draftId ? 'border-primary bg-muted' : 'border-border'
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => loadDraft(draft)}
-                  className="flex flex-1 flex-col items-start gap-1 text-left"
+          {draftsQuery.isLoading ? (
+            <p className="mt-2 text-sm text-muted-foreground">Loading drafts...</p>
+          ) : draftsQuery.error ? (
+            <p className="mt-2 text-sm text-red-600">Failed to load drafts</p>
+          ) : draftsQuery.data && draftsQuery.data.length > 0 ? (
+            <ul className="mt-3 space-y-2">
+              {draftsQuery.data.map((draft) => (
+                <li
+                  key={draft.id}
+                  className={`flex items-center justify-between rounded-md border p-3 ${
+                    draft.id === draftId ? 'border-primary bg-muted' : 'border-border'
+                  }`}
                 >
-                  <span className="font-medium">
-                    {draft.title ?? 'Untitled draft'}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {categoryLabels[draft.category]} ·{' '}
-                    {new Date(draft.updatedAt).toLocaleString()}
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => loadDraft(draft)}
+                    className="flex flex-1 flex-col items-start gap-1 text-left"
+                  >
+                    <span className="font-medium">
+                      {draft.title ?? 'Untitled draft'}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {categoryLabels[draft.category]} ·{' '}
+                      {new Date(draft.updatedAt).toLocaleString()}
+                    </span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleDeleteDraft(draft.id)}
-                  disabled={deleteDraft.isPending}
-                  className="ml-2 rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
-                  aria-label="Delete draft"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-2 text-sm text-muted-foreground">No drafts yet.</p>
-        )}
-      </section>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteDraft(draft.id)}
+                    disabled={deleteDraft.isPending}
+                    className="ml-2 rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                    aria-label="Delete draft"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">No drafts yet.</p>
+          )}
+        </section>
+      )}
     </div>
   );
 }

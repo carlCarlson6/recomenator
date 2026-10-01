@@ -21,6 +21,7 @@ import { Route as GroupsGroupIdSettingsRouteImport } from './routes/groups/$grou
 import { Route as GroupsJoinInviteCodeRouteImport } from './routes/groups/join.$inviteCode'
 import { Route as GroupsGroupIdPostsPostIdRouteImport } from './routes/groups/$groupId/posts.$postId'
 import { Route as GroupsGroupIdPostsNewRouteImport } from './routes/groups/$groupId/posts.new'
+import { Route as GroupsGroupIdPostsPostIdEditRouteImport } from './routes/groups/$groupId/posts.$postId_.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -85,6 +86,12 @@ const GroupsGroupIdPostsNewRoute = GroupsGroupIdPostsNewRouteImport.update({
   path: '/posts/new',
   getParentRoute: () => GroupsGroupIdRoute,
 } as any)
+const GroupsGroupIdPostsPostIdEditRoute =
+  GroupsGroupIdPostsPostIdEditRouteImport.update({
+    id: '/posts/$postId_/edit',
+    path: '/posts/$postId/edit',
+    getParentRoute: () => GroupsGroupIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/': typeof GroupsGroupIdIndexRoute
   '/groups/$groupId/posts/$postId': typeof GroupsGroupIdPostsPostIdRoute
   '/groups/$groupId/posts/new': typeof GroupsGroupIdPostsNewRoute
+  '/groups/$groupId/posts/$postId/edit': typeof GroupsGroupIdPostsPostIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -112,6 +120,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId': typeof GroupsGroupIdIndexRoute
   '/groups/$groupId/posts/$postId': typeof GroupsGroupIdPostsPostIdRoute
   '/groups/$groupId/posts/new': typeof GroupsGroupIdPostsNewRoute
+  '/groups/$groupId/posts/$postId/edit': typeof GroupsGroupIdPostsPostIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,6 +136,7 @@ export interface FileRoutesById {
   '/groups/$groupId/': typeof GroupsGroupIdIndexRoute
   '/groups/$groupId/posts/$postId': typeof GroupsGroupIdPostsPostIdRoute
   '/groups/$groupId/posts/new': typeof GroupsGroupIdPostsNewRoute
+  '/groups/$groupId/posts/$postId_/edit': typeof GroupsGroupIdPostsPostIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/'
     | '/groups/$groupId/posts/$postId'
     | '/groups/$groupId/posts/new'
+    | '/groups/$groupId/posts/$postId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId'
     | '/groups/$groupId/posts/$postId'
     | '/groups/$groupId/posts/new'
+    | '/groups/$groupId/posts/$postId/edit'
   id:
     | '__root__'
     | '/'
@@ -170,6 +182,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/'
     | '/groups/$groupId/posts/$postId'
     | '/groups/$groupId/posts/new'
+    | '/groups/$groupId/posts/$postId_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -267,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsGroupIdPostsNewRouteImport
       parentRoute: typeof GroupsGroupIdRoute
     }
+    '/groups/$groupId/posts/$postId_/edit': {
+      id: '/groups/$groupId/posts/$postId_/edit'
+      path: '/posts/$postId/edit'
+      fullPath: '/groups/$groupId/posts/$postId/edit'
+      preLoaderRoute: typeof GroupsGroupIdPostsPostIdEditRouteImport
+      parentRoute: typeof GroupsGroupIdRoute
+    }
   }
 }
 
@@ -277,6 +297,7 @@ interface GroupsGroupIdRouteChildren {
   GroupsGroupIdIndexRoute: typeof GroupsGroupIdIndexRoute
   GroupsGroupIdPostsPostIdRoute: typeof GroupsGroupIdPostsPostIdRoute
   GroupsGroupIdPostsNewRoute: typeof GroupsGroupIdPostsNewRoute
+  GroupsGroupIdPostsPostIdEditRoute: typeof GroupsGroupIdPostsPostIdEditRoute
 }
 
 const GroupsGroupIdRouteChildren: GroupsGroupIdRouteChildren = {
@@ -286,6 +307,7 @@ const GroupsGroupIdRouteChildren: GroupsGroupIdRouteChildren = {
   GroupsGroupIdIndexRoute: GroupsGroupIdIndexRoute,
   GroupsGroupIdPostsPostIdRoute: GroupsGroupIdPostsPostIdRoute,
   GroupsGroupIdPostsNewRoute: GroupsGroupIdPostsNewRoute,
+  GroupsGroupIdPostsPostIdEditRoute: GroupsGroupIdPostsPostIdEditRoute,
 }
 
 const GroupsGroupIdRouteWithChildren = GroupsGroupIdRoute._addFileChildren(

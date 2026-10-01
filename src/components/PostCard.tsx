@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Bookmark, Eye, MessageCircle, ThumbsDown, ThumbsUp, Trash2, type LucideIcon } from 'lucide-react';
+import { Bookmark, Eye, MessageCircle, Pencil, ThumbsDown, ThumbsUp, Trash2, type LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import { Modal } from '#/shared/ui/Modal.js';
@@ -160,15 +160,25 @@ export function PostCard({
         </Link>
 
         {isAuthor && (
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-            disabled={deletePost.isPending}
-            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-red-600 disabled:opacity-50"
-            aria-label="Delete recommendation"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <Link
+              to="/groups/$groupId/posts/$postId/edit"
+              params={{ groupId: post.groupId, postId: post.id }}
+              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Edit recommendation"
+            >
+              <Pencil className="h-4 w-4" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              disabled={deletePost.isPending}
+              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-red-600 disabled:opacity-50"
+              aria-label="Delete recommendation"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         )}
       </div>
 
