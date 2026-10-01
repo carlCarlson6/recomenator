@@ -5,7 +5,7 @@ A private group app for friends to share recommendations about video games, movi
 ## What it does
 
 - Users sign in with social login via Clerk.
-- Users create private groups and generate long-expiring, multi-use invitation links.
+- Users create private groups; any member generates non-expiring, multi-use invitation links.
 - Other users join groups only via an invitation link.
 - Members post recommendations under a fixed category with an optional description and external link. Authors can edit their own recommendations, and link previews refresh when the link changes.
 - The app fetches link previews (Open Graph, YouTube, Spotify embeds) when a post is created.

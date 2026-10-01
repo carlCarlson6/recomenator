@@ -2,11 +2,7 @@ import { err, ok, type Result } from '#/shared/kernel/Result.js';
 import type { DomainError } from '#/shared/kernel/DomainError.js';
 
 import { Invite } from '../domain/Invite.js';
-import {
-  GroupNotFoundError,
-  NotGroupMemberError,
-  UnauthorizedToManageGroupError,
-} from '../domain/errors.js';
+import { GroupNotFoundError, NotGroupMemberError } from '../domain/errors.js';
 import type { GroupRepository } from '../domain/ports/GroupRepository.js';
 import type { InviteRepository } from '../domain/ports/InviteRepository.js';
 import type { MembershipRepository } from '../domain/ports/MembershipRepository.js';
@@ -20,7 +16,7 @@ export type InviteDto = {
   id: string;
   code: string;
   groupId: string;
-  expiresAt: Date;
+  expiresAt: Date | null;
   usageCount: number;
   maxUses: number | null;
 };
@@ -47,12 +43,11 @@ export async function generateInvite(
   const group = await deps.groupRepo.findById(input.groupId);
   if (!group) return err(new GroupNotFoundError());
 
-  if (!group.isManagedBy(input.userId)) {
-    return err(new UnauthorizedToManageGroupError());
-  }
-
   const membership = await deps.membershipRepo.findByUserAndGroup(input.userId, input.groupId);
   if (!membership) return err(new NotGroupMemberError());
+
+  const existing = await deps.inviteRepo.findByGroupId(group.id);
+  if (existing) return ok(toDto(existing));
 
   const invite = Invite.create({ groupId: group.id, createdById: input.userId });
   await deps.inviteRepo.save(invite);
