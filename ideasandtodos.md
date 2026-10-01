@@ -1,7 +1,6 @@
 - update profile image
 - update your own post
 - review initial app flow, redirect to group, make group default
-- introduce effect-ts ?? http://skills.sh/effect-ts/skills/effect-ts
 - browse recomendations not only by category, also by user
 - fix invite, any member of a group can generate invite link
 - mobile app
