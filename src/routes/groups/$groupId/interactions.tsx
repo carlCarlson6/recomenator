@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, useParams } from '@tanstack/react-router'
+import { Link, createFileRoute, useParams } from '@tanstack/react-router'
+import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 
 import { getInteractionsFn } from '#/modules/queries/interactions/interactions.functions.js'
@@ -59,7 +60,16 @@ function InteractionsPage() {
   return (
     <>
       <main className="mx-auto max-w-xl px-4 py-12 pb-24">
-        <h1 className="text-2xl font-bold">{data.groupName}</h1>
+        <Link
+          to="/groups/$groupId"
+          params={{ groupId }}
+          className="inline-flex items-center gap-1 text-sm text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to group
+        </Link>
+
+        <h1 className="mt-6 text-2xl font-bold">{data.groupName}</h1>
         <p className="mt-1 text-muted-foreground">My interactions</p>
 
         <div className="mt-6 space-y-4">

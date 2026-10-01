@@ -1,4 +1,3 @@
 - update profile image
-- review initial app flow, redirect to group, make group default
 - browse recomendations not only by category, also by user
 - mobile app
