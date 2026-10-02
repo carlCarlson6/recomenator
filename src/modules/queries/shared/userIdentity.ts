@@ -2,7 +2,6 @@ import { clerkClient } from '@clerk/tanstack-react-start/server';
 
 export type ClerkIdentity = {
   name: string;
-  imageUrl: string | null;
 };
 
 export type ClerkIdentityLookup = (userIds: string[]) => Promise<Map<string, ClerkIdentity>>;
@@ -17,7 +16,6 @@ export async function defaultClerkIdentityLookup(
     for (const cu of clerkUsers.data) {
       map.set(cu.id, {
         name: cu.username ?? cu.emailAddresses[0]?.emailAddress ?? 'Anonymous',
-        imageUrl: cu.imageUrl ?? null,
       });
     }
   } catch {
@@ -56,7 +54,7 @@ export async function resolveIdentities(
     identities.set(item.userId, current);
 
     if (!emailFallbacks.has(item.userId) && item.email) emailFallbacks.set(item.userId, item.email);
-    if (!current.displayName || !current.avatarUrl) missingUserIds.add(item.userId);
+    if (!current.displayName) missingUserIds.add(item.userId);
   }
 
   if (missingUserIds.size > 0) {
@@ -64,7 +62,6 @@ export async function resolveIdentities(
     for (const [userId, clerkIdentity] of clerkIdentities) {
       const current = identities.get(userId) ?? { displayName: null, avatarUrl: null };
       current.displayName ??= clerkIdentity.name;
-      current.avatarUrl ??= clerkIdentity.imageUrl;
       identities.set(userId, current);
     }
   }

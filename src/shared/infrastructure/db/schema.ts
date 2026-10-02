@@ -72,7 +72,7 @@ export const memberships = pgTable(
       .notNull(),
     displayName: text('display_name').notNull(),
     // Custom avatars are per-membership, like display names. Null means "fall
-    // back to Clerk's image, then to local initials".
+    // back to local initials" (rendered by the Avatar component).
     avatarUrl: text('avatar_url'),
     role: text('role').$type<Role>().notNull().default('member'),
     ...timestamps,

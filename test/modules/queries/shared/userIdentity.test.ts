@@ -31,7 +31,7 @@ describe('resolveIdentities', () => {
 
   it('falls back to the Clerk username when there is no display name', async () => {
     const lookup = vi.fn<ClerkIdentityLookup>(
-      async () => new Map<string, ClerkIdentity>([['usr_1', { name: 'clerk_alice', imageUrl: null }]]),
+      async () => new Map<string, ClerkIdentity>([['usr_1', { name: 'clerk_alice' }]]),
     );
 
     const result = await resolveIdentities(
@@ -42,33 +42,20 @@ describe('resolveIdentities', () => {
     expect(result.get('usr_1')).toEqual({ displayName: 'clerk_alice', avatarUrl: null });
   });
 
-  it('asks Clerk for the image when the membership has a name but no avatar', async () => {
-    const lookup = vi.fn<ClerkIdentityLookup>(
-      async () =>
-        new Map<string, ClerkIdentity>([
-          ['usr_1', { name: 'clerk_alice', imageUrl: 'https://clerk.example.com/alice.png' }],
-        ]),
-    );
+  it('leaves the avatar null when the membership has none, without asking Clerk', async () => {
+    const lookup = vi.fn<ClerkIdentityLookup>(async () => new Map());
 
     const result = await resolveIdentities(
       [{ userId: 'usr_1', displayName: 'Alice', email: 'alice@example.com' }],
       lookup,
     );
 
-    expect(result.get('usr_1')).toEqual({
-      displayName: 'Alice',
-      avatarUrl: 'https://clerk.example.com/alice.png',
-    });
-    expect(lookup).toHaveBeenCalledWith(['usr_1']);
+    expect(result.get('usr_1')).toEqual({ displayName: 'Alice', avatarUrl: null });
+    expect(lookup).not.toHaveBeenCalled();
   });
 
-  it('prefers the membership avatar over the Clerk image', async () => {
-    const lookup = vi.fn<ClerkIdentityLookup>(
-      async () =>
-        new Map<string, ClerkIdentity>([
-          ['usr_1', { name: 'clerk_alice', imageUrl: 'https://clerk.example.com/alice.png' }],
-        ]),
-    );
+  it('keeps the membership avatar without asking Clerk', async () => {
+    const lookup = vi.fn<ClerkIdentityLookup>(async () => new Map());
 
     const result = await resolveIdentities(
       [{ userId: 'usr_1', displayName: 'Alice', avatarUrl: 'https://storage.example.com/alice.webp' }],
@@ -101,7 +88,7 @@ describe('resolveIdentities', () => {
     expect(result.get('usr_1')).toEqual({ displayName: 'Anonymous', avatarUrl: null });
   });
 
-  it('only asks Clerk for the distinct users missing a name or an avatar', async () => {
+  it('only asks Clerk for the distinct users missing a name', async () => {
     const lookup = vi.fn<ClerkIdentityLookup>(async () => new Map());
 
     await resolveIdentities(
@@ -116,7 +103,7 @@ describe('resolveIdentities', () => {
     );
 
     expect(lookup).toHaveBeenCalledTimes(1);
-    expect(lookup).toHaveBeenCalledWith(['usr_2', 'usr_3', 'usr_4']);
+    expect(lookup).toHaveBeenCalledWith(['usr_2', 'usr_3']);
   });
 
   it('merges repeated users, preferring the first name and avatar found', async () => {
