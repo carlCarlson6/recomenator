@@ -15,4 +15,6 @@ todos.json
 .vscode
 .vercel
 drafts.md
+*.drafts.md
+*.draft.md
 .env.prod
