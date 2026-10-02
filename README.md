@@ -67,9 +67,9 @@ src/
 - Queries may join freely across tables — that is the point.
 - Display names are resolved by `queries/shared/userIdentity.ts` using the chain
   `membership.displayName -> Clerk username -> email -> 'Anonymous'`. Avatars are resolved by the
-  same resolver with the chain `membership.avatarUrl -> Clerk imageUrl -> local initials` (the
-  initials fallback is rendered by the `Avatar` component). The Clerk lookup is batched
-  (`getUserList`) and never written back to the database.
+  same resolver with the chain `membership.avatarUrl -> local initials` (the initials fallback is
+  rendered by the `Avatar` component; Clerk images are never used). The Clerk lookup is batched
+  (`getUserList`), only fetches display names, and is never written back to the database.
 
 ### Write side (`modules/commands`)
 
