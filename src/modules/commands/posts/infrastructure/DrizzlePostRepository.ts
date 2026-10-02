@@ -31,6 +31,7 @@ export class DrizzlePostRepository implements PostRepository {
       .onConflictDoUpdate({
         target: posts.id,
         set: {
+          category: post.category,
           title: post.title,
           description: post.description,
           externalUrl: post.externalUrl,
