@@ -1,20 +1,30 @@
-import { eq, and, inArray, desc, isNull, sql } from 'drizzle-orm';
+import { eq, and, inArray, desc, isNull, sql, or, lt, gte } from 'drizzle-orm';
 import { db } from '#/shared/infrastructure/db/client.js';
 import { posts, memberships, users, postReactions, replies, groups } from '#/shared/infrastructure/db/schema.js';
 import type { Category, ReactionType } from '#/shared/infrastructure/db/schema.js';
 import { resolveIdentities } from '../shared/userIdentity.js';
 import { buildPostCardRM, type PostCardRM } from '../shared/postCardQuery.js';
+import {
+  paginateRows,
+  timelineCursorBounds,
+  toTimelineCursor,
+  TIMELINE_PAGE_SIZE,
+  type TimelineCursor,
+} from './timelinePagination.js';
 
 export type TimelineRM = {
   groupId: string;
   groupName: string;
   posts: PostCardRM[];
+  nextCursor: TimelineCursor | null;
 };
 
 export async function getTimeline(
   groupId: string,
   userId: string,
   category?: Category,
+  cursor?: TimelineCursor,
+  limit: number = TIMELINE_PAGE_SIZE,
 ): Promise<TimelineRM> {
   const [membership] = await db
     .select()
@@ -25,6 +35,20 @@ export async function getTimeline(
 
   const [group] = await db.select().from(groups).where(eq(groups.id, groupId)).limit(1);
   if (!group) throw new Error('Group not found');
+
+  const cursorCondition = cursor
+    ? (() => {
+        const bounds = timelineCursorBounds(cursor);
+        return or(
+          lt(posts.createdAt, bounds.floor),
+          and(
+            gte(posts.createdAt, bounds.floor),
+            lt(posts.createdAt, bounds.ceiling),
+            lt(posts.id, cursor.id),
+          ),
+        );
+      })()
+    : undefined;
 
   const postRows = await db
     .select({
@@ -53,13 +77,17 @@ export async function getTimeline(
       and(
         eq(posts.groupId, groupId),
         category ? eq(posts.category, category) : undefined,
+        cursorCondition,
       ),
     )
-    .orderBy(desc(posts.createdAt));
+    .orderBy(desc(posts.createdAt), desc(posts.id))
+    .limit(limit + 1);
 
-  const postIds = postRows.map((p) => p.id);
+  const { page: pageRows, hasNextPage } = paginateRows(postRows, limit);
+
+  const postIds = pageRows.map((p) => p.id);
   if (postIds.length === 0) {
-    return { groupId, groupName: group.name, posts: [] };
+    return { groupId, groupName: group.name, posts: [], nextCursor: null };
   }
 
   const [countRows, myReactionRows, replyCountRows] = await Promise.all([
@@ -90,7 +118,7 @@ export async function getTimeline(
   ]);
 
   const identityMap = await resolveIdentities(
-    postRows.map((p) => ({
+    pageRows.map((p) => ({
       userId: p.authorId,
       displayName: p.authorDisplayName,
       email: p.authorEmail,
@@ -114,7 +142,7 @@ export async function getTimeline(
 
   const allTypes: ReactionType[] = ['interested', 'liked', 'not_liked', 'viewed'];
 
-  const postCardRMs = postRows.map((row) => {
+  const postCardRMs = pageRows.map((row) => {
     const postCounts = countsMap.get(row.id) ?? new Map();
     const reactions = allTypes.map((type) => ({
       type,
@@ -144,5 +172,7 @@ export async function getTimeline(
     );
   });
 
-  return { groupId, groupName: group.name, posts: postCardRMs };
+  const nextCursor = hasNextPage ? toTimelineCursor(pageRows[pageRows.length - 1]) : null;
+
+  return { groupId, groupName: group.name, posts: postCardRMs, nextCursor };
 }
