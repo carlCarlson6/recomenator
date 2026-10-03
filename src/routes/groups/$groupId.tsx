@@ -34,7 +34,7 @@ function GroupLayout() {
         <BottomBar>
           <Link
             to="/"
-            className="flex-1"
+            className="min-w-0 flex-1"
           >
             <BottomBarItem>
               <Home className="h-5 w-5" />
@@ -45,18 +45,18 @@ function GroupLayout() {
           <Link
             to="/groups/$groupId/interactions"
             params={{ groupId }}
-            className="flex-1"
+            className="min-w-0 flex-1"
           >
             <BottomBarItem active={location.pathname === `/groups/${groupId}/interactions`}>
               <HandHeart className="h-5 w-5" />
-              <span>Interactions</span>
+              <span>Activity</span>
             </BottomBarItem>
           </Link>
 
           <Link
             to="/groups/$groupId/posts/new"
             params={{ groupId }}
-            className="flex-1"
+            className="min-w-0 flex-1"
           >
             <BottomBarItem active={location.pathname === `/groups/${groupId}/posts/new`}>
               <Plus className="h-5 w-5" />
@@ -67,7 +67,7 @@ function GroupLayout() {
           <Link
             to="/groups/$groupId/notifications"
             params={{ groupId }}
-            className="flex-1"
+            className="min-w-0 flex-1"
           >
             <BottomBarItem active={location.pathname === `/groups/${groupId}/notifications`}>
               <span className="relative">
@@ -78,14 +78,14 @@ function GroupLayout() {
                   </span>
                 )}
               </span>
-              <span>Notifications</span>
+              <span>Alerts</span>
             </BottomBarItem>
           </Link>
 
           <Link
             to="/groups/$groupId/settings"
             params={{ groupId }}
-            className="flex-1"
+            className="min-w-0 flex-1"
           >
             <BottomBarItem active={location.pathname === `/groups/${groupId}/settings`}>
               <Settings className="h-5 w-5" />

@@ -17,7 +17,7 @@ export function BottomBarItem({
 }) {
   return (
     <div
-      className={`flex flex-1 flex-col items-center justify-center gap-0.5 px-2 py-2 text-xs font-medium ${
+      className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 overflow-hidden whitespace-nowrap px-1 py-2 text-xs font-medium ${
         active ? 'text-primary' : 'text-muted-foreground'
       }`}
     >
