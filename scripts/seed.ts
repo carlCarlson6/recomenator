@@ -1,5 +1,7 @@
 import 'dotenv/config';
 
+import { eq } from 'drizzle-orm';
+
 import { db } from '../src/shared/infrastructure/db/client.js';
 import {
   groups,
@@ -26,14 +28,21 @@ async function seed() {
     { id: memberDanaId, email: 'dana@example.com', username: 'dana_viewed' },
   ]).onConflictDoNothing();
 
-  const [group] = await db
+  await db
     .insert(groups)
     .values({
       id: 'grp_seed_group',
       name: 'The Recommendation Club',
       createdById: ownerId,
     })
-    .returning();
+    .onConflictDoNothing();
+
+  const [group] = await db
+    .select()
+    .from(groups)
+    .where(eq(groups.id, 'grp_seed_group'))
+    .limit(1);
+  if (!group) throw new Error('Failed to seed group');
 
   await db.insert(memberships).values([
     { id: 'mem_seed_owner', userId: ownerId, groupId: group.id, displayName: 'Alex', role: 'owner' },
@@ -43,6 +52,27 @@ async function seed() {
     { id: 'mem_seed_member_dana', userId: memberDanaId, groupId: group.id, displayName: 'Dana', role: 'member' },
   ]).onConflictDoNothing();
 
+  // The developer's real Clerk user, added to the seeded group so the timeline
+  // is visible after signing in. The email is a placeholder; it is replaced by
+  // the real Clerk email on the first sign-in (see syncClerkUser).
+  const developerUserId = 'user_3JH6uoGZ3cJ7J4Exf1qmHMbeAXh';
+
+  await db
+    .insert(users)
+    .values({ id: developerUserId, email: 'you@example.com', username: null })
+    .onConflictDoNothing();
+
+  await db
+    .insert(memberships)
+    .values({
+      id: 'mem_seed_developer',
+      userId: developerUserId,
+      groupId: group.id,
+      displayName: 'You',
+      role: 'member',
+    })
+    .onConflictDoNothing();
+
   await db.insert(invites).values({
     id: 'inv_seed_invite',
     code: 'seedseedseedseedseedseedseedseed',
@@ -51,7 +81,7 @@ async function seed() {
     createdById: ownerId,
   }).onConflictDoNothing();
 
-  const [post1] = await db
+  await db
     .insert(posts)
     .values({
       id: 'pst_seed_post',
@@ -62,9 +92,16 @@ async function seed() {
       description: 'A mind-bending thriller.',
       externalUrl: 'https://www.imdb.com/title/tt1375666/',
     })
-    .returning();
+    .onConflictDoNothing();
 
-  const [post2] = await db
+  const [post1] = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.id, 'pst_seed_post'))
+    .limit(1);
+  if (!post1) throw new Error('Failed to seed post1');
+
+  await db
     .insert(posts)
     .values({
       id: 'pst_seed_post_2',
@@ -75,7 +112,14 @@ async function seed() {
       description: 'Perfect work music.',
       externalUrl: 'https://open.spotify.com/album/2noRn2Aes5oNVqXwzAX1MQ',
     })
-    .returning();
+    .onConflictDoNothing();
+
+  const [post2] = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.id, 'pst_seed_post_2'))
+    .limit(1);
+  if (!post2) throw new Error('Failed to seed post2');
 
   await db.insert(replies).values([
     {
@@ -109,6 +153,37 @@ async function seed() {
   await db.insert(postReactions).values([
     { id: 'rct_seed_2_liked_bob', postId: post2.id, userId: memberWithUsernameId, type: 'liked' },
   ]).onConflictDoNothing();
+
+  // Bulk recommendations so the timeline has enough posts to exercise the
+  // infinite-scroll pagination (50 posts per page). CreatedAt is spread over a
+  // minute per post so the reverse-chronological ordering is deterministic.
+  const extraCategories = ['VIDEO_GAMES', 'MOVIES', 'SHOWS', 'MUSIC', 'BOOKS', 'MISC'] as const;
+  const extraMembers = [
+    ownerId,
+    memberWithUsernameId,
+    memberWithEmailOnlyId,
+    memberAnonymousId,
+    memberDanaId,
+  ];
+  const seedNow = Date.now();
+
+  const extraPosts = Array.from({ length: 120 }, (_, i) => {
+    const category = extraCategories[i % extraCategories.length];
+    const authorId = extraMembers[i % extraMembers.length];
+    return {
+      id: `pst_seed_extra_${i + 1}`,
+      groupId: group.id,
+      authorId,
+      category,
+      title: `Recommendation #${i + 1}`,
+      description: `Generated ${category.replace('_', ' ').toLowerCase()} recommendation for pagination testing.`,
+      externalUrl: `https://example.com/rec/${i + 1}`,
+      rating: (i % 10) + 1,
+      createdAt: new Date(seedNow - (i + 1) * 60_000),
+    };
+  });
+
+  await db.insert(posts).values(extraPosts).onConflictDoNothing();
 
   console.log('Database seeded.');
   process.exit(0);
